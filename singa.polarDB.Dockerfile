@@ -17,67 +17,67 @@
 #
 
 
-
+# Based on PolarDB with PostgreSQL 11.9
 FROM polardb/polardb_pg_local_instance:latest
 
-#LABEL maintainer="Naili Xing <xingnaili14@gmai.com>"
-
-ENV DEBIAN_FRONTEND=noninteractive
+# LABEL maintainer="Naili Xing <xingnaili14@gmai.com>"
 
 # Install Python, Vim, and necessary libraries
-RUN apt-get update && \
-    apt-get install -y software-properties-common wget gnupg2 lsb-release git sudo && \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get install -y python3.6 python3-pip vim && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install necessary dependencies for PostgreSQL and Rust
-RUN apt-get update && \
-    apt-get install -y pkg-config libssl-dev libpq-dev libclang-dev curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install necessary dependencies for pgrx
-RUN apt-get update && \
-    apt-get install -y bison flex libreadline-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create the postgres user
+# Note: The 'pip' package might not be directly available like this, usually python3-pip is the package name.
 USER root
-RUN adduser --disabled-password --gecos "" postgres && \
-    mkdir /project && \
-    adduser postgres sudo && \
-    chown -R postgres:postgres /project
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    bzip2 \
+    libbz2-dev \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    wget \
+    llvm \
+    libncursesw5-dev \
+    xz-utils \
+    tk-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    liblzma-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add PostgreSQL's repository
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(. /etc/os-release; echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-
-# Switch to the postgres user and Install Rust and init the cargo
 USER postgres
+# Install pyenv and Python 3.8
+RUN curl https://pyenv.run | bash \
+    && export PYENV_ROOT="$HOME/.pyenv" \
+    && export PATH="$PYENV_ROOT/bin:$PATH" \
+    && eval "$(pyenv init --path)" \
+    && eval "$(pyenv init -)" \
+    && env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8
+
+
+# Switch to the postgres user, install Rust, init the cargo
+# polarDB uses the pg 11.9
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     echo 'source $HOME/.cargo/env' >> $HOME/.bashrc && \
     /bin/bash -c "source $HOME/.cargo/env && cargo install cargo-pgrx --version '0.9.7' --locked" && \
-    /bin/bash -c "source $HOME/.cargo/env && cargo pgrx init"
+    /bin/bash -c "source $HOME/.cargo/env && cargo pgrx init --pg11 /home/postgres/tmp_basedir_polardb_pg_1100_bld/bin/pg_config"
 
-# Set environment variables for Rust and Python
-ENV PATH="/root/.cargo/bin:${PATH}"
-ENV PYTHONPATH="${PYTHONPATH}:/project/Trails/internal/ml/model_selection"
-
-# ARG CACHEBUST=1 is to force re-execute the following CMDs at each updates.
-ARG CACHEBUST=1
 
 # Clone code to there, install dependences,
-WORKDIR /project
-RUN git clone https://github.com/apache/singa/tree/dev-postgresql && \
-    cd ./singa/examples/model_selection/TRAILS-Database-Native-Model-Selection && \
-    pip install -r requirement.txt
+WORKDIR /home/postgres
+RUN git clone https://github.com/NLGithubWP/Trails.git && \
+    cd Trails && \
+    git checkout trails_singa && \
+    cp ./internal/pg_extension/template/Cargo.pg11.toml ./internal/pg_extension/Cargo.toml && \
+    cd ./internal/ml/model_selection && \
+    pip install -r requirement.txt  && \
+    pip install ../../../singa_pkg_code/singa-3.1.0-cp38-cp38-manylinux2014_x86_64.whl
 
 
-WORKDIR /project
-RUN chmod +x ./singa/examples/model_selection/init.sh
+WORKDIR /home/postgres/Trails/internal/pg_extension
+RUN /bin/bash -c "source $HOME/.cargo/env && cargo pgrx install --pg-config /home/postgres/tmp_basedir_polardb_pg_1100_bld/bin/pg_config"
 
-# Set the entry point to your script
-ENTRYPOINT ["/project/singa/examples/model_selection/TRAILS-Database-Native-Model-Selection/init.sh"]
+WORKDIR /home/postgres
+RUN chmod +x ./Trails/init_polardb.sh
+# here we run the default script in /home/postgres

@@ -1,47 +1,28 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 from src.common.constant import *
-from src.eva_engine.phase1.algo.grad_norm import GradNormEvaluator
-from src.eva_engine.phase1.algo.grad_plain import GradPlainEvaluator
-from src.eva_engine.phase1.algo.nas_wot import NWTEvaluator
-from src.eva_engine.phase1.algo.ntk_condition_num import NTKCondNumEvaluator
-from src.eva_engine.phase1.algo.ntk_trace import NTKTraceEvaluator
-from src.eva_engine.phase1.algo.ntk_trace_approx import NTKTraceApproxEvaluator
-from src.eva_engine.phase1.algo.prune_fisher import FisherEvaluator
-from src.eva_engine.phase1.algo.prune_grasp import GraspEvaluator
-from src.eva_engine.phase1.algo.prune_snip import SnipEvaluator
 from src.eva_engine.phase1.algo.prune_synflow import SynFlowEvaluator
-from src.eva_engine.phase1.algo.express_flow import ExpressFlowEvaluator
-from src.eva_engine.phase1.algo.weight_norm import WeightNormEvaluator
-from src.eva_engine.phase1.algo.knas import KNASEvaluator
+
 
 # evaluator mapper to register many existing evaluation algorithms
 evaluator_register = {
-
-    CommonVars.ExpressFlow: ExpressFlowEvaluator(),
-
-    # # sum on gradient
-    CommonVars.GRAD_NORM: GradNormEvaluator(),
-    CommonVars.GRAD_PLAIN: GradPlainEvaluator(),
-    #
-    # # training free matrix
-    # CommonVars.JACOB_CONV: JacobConvEvaluator(),
-    CommonVars.NAS_WOT: NWTEvaluator(),
-
-    # this is ntk based
-    CommonVars.NTK_CONDNUM: NTKCondNumEvaluator(),
-    CommonVars.NTK_TRACE: NTKTraceEvaluator(),
-
-    CommonVars.NTK_TRACE_APPROX: NTKTraceApproxEvaluator(),
-
-    # # prune based
-    CommonVars.PRUNE_FISHER: FisherEvaluator(),
-    CommonVars.PRUNE_GRASP: GraspEvaluator(),
-    CommonVars.PRUNE_SNIP: SnipEvaluator(),
     CommonVars.PRUNE_SYNFLOW: SynFlowEvaluator(),
-
-    # # sum of weight
-    CommonVars.WEIGHT_NORM: WeightNormEvaluator(),
-
-    CommonVars.KNAS: KNASEvaluator(),
-
 }
 

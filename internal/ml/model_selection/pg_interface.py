@@ -1,3 +1,21 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import calendar
 import os
 import time
@@ -12,63 +30,10 @@ from argparse import Namespace
 from shared_config import parse_config_arguments
 
 
-def try_torch():
-    import torch
-    import math
-    dtype = torch.float
-    # Determine the device ("cuda" or "cpu")
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
-    # Create tensors on the specified device
-    x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
-    y = torch.sin(x)
-
-    # Initialize parameters a, b, c, d on the specified device
-    a = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-    b = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-    c = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-    d = torch.randn((), device=device, dtype=dtype, requires_grad=True)
-
-    learning_rate = 1e-6
-    for t in range(2000):
-        # Forward pass: compute predicted y
-        y_pred = a + b * x + c * x ** 2 + d * x ** 3
-
-        # Compute and print loss every 100 steps
-        loss = (y_pred - y).pow(2).sum()
-        if t % 100 == 99:
-            print(t, loss.item())
-
-        # Backprop to compute gradients of a, b, c, d with respect to loss
-        loss.backward()
-
-        # Use torch.no_grad() to prevent tracking history on tensors
-        with torch.no_grad():
-            a -= learning_rate * a.grad
-            b -= learning_rate * b.grad
-            c -= learning_rate * c.grad
-            d -= learning_rate * d.grad
-
-            # Manually zero the gradients after updating weights
-            a.grad = None
-            b.grad = None
-            c.grad = None
-            d.grad = None
-
-    return f'Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3'
-
-
-ONLINE_TEST = True
-
-
 def exception_catcher(func):
     def wrapper(encoded_str: str):
         global_res = "NA, "
-        global ONLINE_TEST
         try:
-            if ONLINE_TEST:
-                try_torch()
-                ONLINE_TEST = False
             # each functon accepts a json string
             params = json.loads(encoded_str)
             config_file = params.get("config_file")
@@ -275,6 +240,26 @@ def filtering_phase(params: dict, args: Namespace):
 
     rms = RunModelSelection(args.search_space, args, is_simulate=args.is_simulate)
     k_models, _, _, _ = rms.filtering_phase(N=n, K=k)
+
+    return orjson.dumps({"k_models": k_models}).decode('utf-8')
+
+
+@exception_catcher
+def filtering_phase_dataLoader(params: dict, args: Namespace):
+    from src.logger import logger
+    logger.info(f"begin run filtering_phase CPU only")
+
+    mini_batch_m = params["mini_batch"]
+    n = int(params["n"])
+    k = int(params["k"])
+
+    from src.eva_engine.run_ms import RunModelSelection
+
+    mini_batch_data = json.loads(mini_batch_m)
+    dataloader = generate_dataloader(mini_batch_data=mini_batch_data, args=args)
+
+    rms = RunModelSelection(args.search_space, args, is_simulate=args.is_simulate)
+    k_models, _, _, _ = rms.filtering_phase(N=n, K=k, train_loader=dataloader)
 
     return orjson.dumps({"k_models": k_models}).decode('utf-8')
 
@@ -643,6 +628,7 @@ def records_results(params: dict, args: Namespace):
 def measure_call_overheads(params: dict, args: Namespace):
     return orjson.dumps({"Done": 1}).decode('utf-8')
 
+
 import numpy as np
 from multiprocessing import shared_memory
 
@@ -669,17 +655,4 @@ if __name__ == "__main__":
     params["n"] = 10
     params["k"] = 1
     params["config_file"] = './internal/ml/model_selection/config.ini'
-    print(filtering_phase(json.dumps(params)))
-
-    params = {}
-    params[
-        "mini_batch"] = '[{"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}]'
-    params["config_file"] = './internal/ml/model_selection/config.ini'
-    print(profiling_refinement_phase(json.dumps(params)))
-
-    params = {}
-    params["budget"] = 10
-    params[
-        "mini_batch"] = '[{"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"1"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}, {"col1":"123:123","col2":"123:123","col3":"123:123","label":"0"}]'
-    params["config_file"] = './internal/ml/model_selection/config.ini'
-    print(model_selection(json.dumps(params)))
+    print(filtering_phase_dataLoader(json.dumps(params)))

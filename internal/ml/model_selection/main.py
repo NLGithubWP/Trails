@@ -1,4 +1,21 @@
-# this is the main function of model selection.
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 
 import calendar
 import os
@@ -15,12 +32,12 @@ def generate_data_loader():
             test_batch_size=args.batch_size,
             dataset=args.dataset,
             num_workers=1,
-            datadir=os.path.join(args.base_dir, "data"))
+            datadir=os.path.join(args.base_dir))
         test_loader = val_loader
     else:
         train_loader, val_loader, test_loader = libsvm_dataloader(
             args=args,
-            data_dir=os.path.join(args.base_dir, "data", "structure_data", args.dataset),
+            data_dir=os.path.join(args.base_dir, args.dataset),
             nfield=args.nfield,
             batch_size=args.batch_size)
         class_num = args.num_labels

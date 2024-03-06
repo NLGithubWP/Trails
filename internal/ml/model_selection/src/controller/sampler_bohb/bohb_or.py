@@ -1,20 +1,25 @@
-##################################################
-# Copyright (c) Xuanyi Dong [GitHub D-X-Y], 2020 #
-###################################################################
-# BOHB: Robust and Efficient Hyperparameter Optimization at Scale #
-# required to install hpbandster ##################################
-# pip install hpbandster         ##################################
-###################################################################
-# OMP_NUM_THREADS=4 python exps/NATS-algos/bohb.py --search_space tss --dataset cifar10 --num_samples 4 --random_fraction 0.0 --bandwidth_factor 3 --rand_seed 1
-# OMP_NUM_THREADS=4 python exps/NATS-algos/bohb.py --search_space sss --dataset cifar10 --num_samples 4 --random_fraction 0.0 --bandwidth_factor 3 --rand_seed 1
-###################################################################
-import os, sys, time, random, argparse, collections
-from copy import deepcopy
-import torch
 
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import os, sys, time, random, argparse, collections
 from src.tools.env_tools import prepare_seed
 from src.logger import logger
-
 from models import CellStructure, get_search_spaces
 
 # BOHB: Robust and Efficient Hyperparameter Optimization at Scale, ICML 2018
@@ -101,7 +106,6 @@ class MyWorker(Worker):
 
 
 def main(xargs, api):
-    torch.set_num_threads(4)
     prepare_seed(xargs.rand_seed)
 
     logger.info("{:} use api : {:}".format(time_string(), api))
@@ -279,7 +283,11 @@ if __name__ == "__main__":
             all_info[i] = {"all_archs": all_archs, "all_total_times": all_total_times}
         save_path = save_dir / "results.pth"
         print("save into {:}".format(save_path))
-        torch.save(all_info, save_path)
+
+        import pickle
+        with open(save_path, 'wb') as f:
+            pickle.dump(all_info, f)
+
     else:
         main(args, api)
 

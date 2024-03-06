@@ -1,3 +1,22 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 # this is for checking the flops and params
 try:
     from thop import profile
@@ -258,15 +277,15 @@ class P1Evaluator:
             begin = time.time()
             new_model = self.search_space_ins.new_arch_scratch_with_default_setting(model_encoding, bn=bn)
 
-            # mlp have embedding layer, which can be cached, optimization!
-            if self.search_space_ins.name == Config.MLPSP:
-                if self.enable_cache:
-                    new_model.init_embedding(self.model_cache)
-                    if self.model_cache is None:
-                        self.model_cache = new_model.embedding.to(self.device)
-                else:
-                    # init embedding every time created a new model
-                    new_model.init_embedding()
+            # # mlp have embedding layer, which can be cached, optimization!
+            # if self.search_space_ins.name == Config.MLPSP:
+            #     if self.enable_cache:
+            #         new_model.init_embedding(self.model_cache)
+            #         if self.model_cache is None:
+            #             self.model_cache = new_model.embedding.to(self.device)
+            #     else:
+            #         # init embedding every time created a new model
+            #         new_model.init_embedding()
 
             self.time_usage["track_io_model_init"].append(time.time() - begin)
 
@@ -442,7 +461,7 @@ class P1Evaluator:
                 mini_batch = torch.ones([1] + feature_dim).float().to(self.device)
             else:
                 # this is for the tabular data,
-                mini_batch = new_model.generate_all_ones_embedding(4).float().to(self.device)
+                mini_batch = new_model.generate_all_ones_embedding().float().to(self.device)
                 # print(mini_batch.size())
         else:
             # for others, skip preprocessing

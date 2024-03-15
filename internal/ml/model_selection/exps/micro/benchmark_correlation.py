@@ -31,6 +31,9 @@ def calculate_correlation(dataset, search_space, epoch_train, srcc_top_k: List =
         score_value = score_query.query_all_tfmem_score(model_id)
         acc, _ = acc_query.get_ground_truth(arch_id=model_id, dataset=dataset, epoch_num=epoch_train)
 
+        if is_visual and dataset == Config.Frappe and acc < 0.970:
+            continue
+
         # append score and ground truth
         for alg, value in score_value.items():
             # If the algorithm is not in the dict, initialize its list
@@ -96,12 +99,12 @@ def visualization(alg, dataset, sorted_ground_truth, sorted_scores):
     matplotlib.rc('xtick', labelsize=set_tick_size)
     matplotlib.rc('ytick', labelsize=set_tick_size)
     plt.rcParams['axes.labelsize'] = set_tick_size
-    color_list = ['blue', 'green', 'purple',  'black',  'brown', 'red']
+    color_map = {Config.Frappe: 'green', Config.UCIDataset: 'purple', Config.Criteo: 'blue'}
     fig, ax = plt.subplots(figsize=(6.4, 5))
-    plt.scatter(sorted_ground_truth, sorted_scores, color=random.choice(color_list))
+    plt.scatter(sorted_ground_truth, sorted_scores, color=color_map[dataset])
     plt.grid()
     plt.xlabel('Validation AUC')
-    plt.ylabel('TRAILER Score')
+    plt.ylabel('Score')
     plt.tight_layout()
     fig.savefig(f"visua_score_auc_{alg}_{dataset}.jpg", bbox_inches='tight')
 

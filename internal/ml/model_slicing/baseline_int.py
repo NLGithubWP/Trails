@@ -40,6 +40,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
     cur = conn.cursor()
     # Select rows greater than last_id
     if with_join == 1:
+        print("Using Join operations")
         if database == "census":
             cur.execute(f"""SELECT
                      l.id,

@@ -36,10 +36,23 @@ def read_json(file_name):
         return {}
 
 
-def fetch_and_preprocess(conn, batch_size, database):
+def fetch_and_preprocess(conn, batch_size, database, with_join):
     cur = conn.cursor()
     # Select rows greater than last_id
-    cur.execute(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
+    if with_join == 1:
+        cur.execute(f"""SELECT
+                 l.id,
+                 l.label,
+                 l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10,
+                 l.col11, l.col12, l.col13, l.col14, l.col15, l.col16, l.col17, l.col18, l.col19, l.col20,
+                 r.col21, r.col22, r.col23, r.col24, r.col25, r.col26, r.col27, r.col28, r.col29, r.col30,
+                 r.col31, r.col32, r.col33, r.col34, r.col35, r.col36, r.col37, r.col38, r.col39, r.col40, r.col41
+             FROM
+                 {database}_int_train_left l
+             JOIN
+                 {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+    else:
+        cur.execute(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
     rows = cur.fetchall()
     return rows
 
@@ -53,12 +66,12 @@ def pre_processing(mini_batch_data: List[Tuple]):
     return {'id': feat_id[:, 2:]}
 
 
-def fetch_data(database, batch_size):
+def fetch_data(database, batch_size, with_join):
     global time_dict
     print("Data fetching ....")
     begin_time = time.time()
     with psycopg2.connect(database=DB_NAME, user=USER, host=HOST, port=PORT) as conn:
-        rows = fetch_and_preprocess(conn, batch_size, database)
+        rows = fetch_and_preprocess(conn, batch_size, database, with_join)
     time_dict["data_query_time"] += time.time() - begin_time
     print(f"Data fetching done {rows[0]}, size = {len(rows)}, type = {type(rows)}, {type(rows[0])}")
 
@@ -123,6 +136,7 @@ parser.add_argument('--device', type=str, default="cuda")
 parser.add_argument('--dataset', type=str, default="frappe")
 parser.add_argument('--target_batch', type=int, default=10000)
 parser.add_argument('--batch_size', type=int, default=10000)
+parser.add_argument('--with_join', type=int, default=1)
 parser.add_argument('--col_cardinalities_file', type=str, default="path to the stored file")
 
 if __name__ == '__main__':
@@ -167,7 +181,7 @@ if __name__ == '__main__':
         print(f"num_ite = {num_ite}")
         for i in range(num_ite):
             # fetch from db
-            data_batch = fetch_data(args.dataset, args.batch_size)
+            data_batch = fetch_data(args.dataset, args.batch_size, args.with_join)
             print("Copy to device")
             # wait for moving data to GPU
             begin = time.time()

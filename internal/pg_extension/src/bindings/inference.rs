@@ -834,7 +834,7 @@ pub fn run_inference_shared_memory_write_once_int_join(
                     FROM
                         {}_int_train_left l
                     JOIN
-                        {}_int_train_right r ON l.id = r.id {} limit {};", dataset, sql, batch_size);
+                        {}_int_train_right r ON l.id = r.id {} limit {};", dataset, dataset, sql, batch_size);
         let mut cursor = client.open_cursor(&query, None);
         let table = match cursor.fetch(batch_size as c_long) {
             Ok(table) => table,

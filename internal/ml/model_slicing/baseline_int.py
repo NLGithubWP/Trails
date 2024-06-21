@@ -40,17 +40,50 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
     cur = conn.cursor()
     # Select rows greater than last_id
     if with_join == 1:
-        cur.execute(f"""SELECT
-                 l.id,
-                 l.label,
-                 l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10,
-                 l.col11, l.col12, l.col13, l.col14, l.col15, l.col16, l.col17, l.col18, l.col19, l.col20,
-                 r.col21, r.col22, r.col23, r.col24, r.col25, r.col26, r.col27, r.col28, r.col29, r.col30,
-                 r.col31, r.col32, r.col33, r.col34, r.col35, r.col36, r.col37, r.col38, r.col39, r.col40, r.col41
-             FROM
-                 {database}_int_train_left l
-             JOIN
-                 {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+        if database == "census":
+            cur.execute(f"""SELECT
+                     l.id,
+                     l.label,
+                     l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10,
+                     l.col11, l.col12, l.col13, l.col14, l.col15, l.col16, l.col17, l.col18, l.col19, l.col20,
+                     r.col21, r.col22, r.col23, r.col24, r.col25, r.col26, r.col27, r.col28, r.col29, r.col30,
+                     r.col31, r.col32, r.col33, r.col34, r.col35, r.col36, r.col37, r.col38, r.col39, r.col40, r.col41
+                 FROM
+                     {database}_int_train_left l
+                 JOIN
+                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+        if database == "credit":
+            cur.execute(f"""SELECT
+                    l.id,
+                    l.label,
+                    l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10, l.col11, l.col12,
+                    r.col13, r.col14, r.col15, r.col16, r.col17, r.col18, r.col19, r.col20, r.col21, r.col22, r.col23
+                 FROM
+                     {database}_int_train_left l
+                 JOIN
+                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+
+        if database == "diabetes":
+            cur.execute(f"""SELECT
+                         l.id,
+                        l.label,
+                        l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10, l.col11, l.col12, l.col13, l.col14, l.col15, l.col16, l.col17, l.col18, l.col19, l.col20, l.col21, l.col22, l.col23, l.col24,
+                        r.col25, r.col26, r.col27, r.col28, r.col29, r.col30, r.col31, r.col32, r.col33, r.col34, r.col35, r.col36, r.col37, r.col38, r.col39, r.col40, r.col41, r.col42, r.col43, r.col44, r.col45, r.col46, r.col47, r.col48
+                 FROM
+                     {database}_int_train_left l
+                 JOIN
+                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+
+        if database == "hcdr":
+            cur.execute(f"""SELECT
+                        l.id,
+                        l.label,
+                        l.col1, l.col2, l.col3, l.col4, l.col5, l.col6, l.col7, l.col8, l.col9, l.col10, l.col11, l.col12, l.col13, l.col14, l.col15, l.col16, l.col17, l.col18, l.col19, l.col20, l.col21, l.col22, l.col23, l.col24, l.col25, l.col26, l.col27, l.col28, l.col29, l.col30, l.col31, l.col32, l.col33, l.col34,
+                        r.col35, r.col36, r.col37, r.col38, r.col39, r.col40, r.col41, r.col42, r.col43, r.col44, r.col45, r.col46, r.col47, r.col48, r.col49, r.col50, r.col51, r.col52, r.col53, r.col54, r.col55, r.col56, r.col57, r.col58, r.col59, r.col60, r.col61, r.col62, r.col63, r.col64, r.col65, r.col66, r.col67, r.col68, r.col69
+                 FROM
+                     {database}_int_train_left l
+                 JOIN
+                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
     else:
         cur.execute(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
     rows = cur.fetchall()

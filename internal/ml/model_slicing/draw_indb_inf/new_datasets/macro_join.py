@@ -17,6 +17,9 @@ thousands_format = FuncFormatter(thousands_formatter)
 
 from config import *
 
+bar_width = 0.2  # Adjust bar width for better fit
+spacing = bar_width / 2  # Adjust spacing to ensure symmetry
+
 
 # Helper function to load data
 def load_data(filepath):
@@ -116,31 +119,44 @@ for dataset, valuedic in datasets_result.items():
     in_db_data_preprocess = indb_med_opt["py_conver_to_tensor"]
     in_db_data_compute = indb_med_opt["py_compute"]
 
-    ax.bar(index + bar_width / 2, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
+    ax.bar(index + bar_width + spacing, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
            label=label_in_db_model_load,
            edgecolor='black')
-    ax.bar(index + bar_width / 2, in_db_data_query, bar_width, color=colors[0], hatch=hatches[0], zorder=2,
+    ax.bar(index + bar_width + spacing, in_db_data_query, bar_width, color=colors[0], hatch=hatches[0], zorder=2,
            label=label_in_db_data_query,
            bottom=in_db_data_model_load,
            edgecolor='black')
-    ax.bar(index + bar_width / 2, in_db_data_copy_start_py, bar_width, color=colors[1], hatch=hatches[1], zorder=2,
+    ax.bar(index + bar_width + spacing, in_db_data_copy_start_py, bar_width, color=colors[1], hatch=hatches[1],
+           zorder=2,
            bottom=in_db_data_model_load + in_db_data_query,
            label=label_in_db_data_copy_start_py,
            edgecolor='black')
-    ax.bar(index + bar_width / 2, in_db_data_preprocess, bar_width, color=colors[2],
+    ax.bar(index + bar_width + spacing, in_db_data_preprocess, bar_width, color=colors[2],
            hatch=hatches[2], zorder=2,
            bottom=in_db_data_model_load + in_db_data_query + in_db_data_copy_start_py,
            label=label_in_db_data_preprocess, edgecolor='black')
-    ax.bar(index + bar_width / 2, in_db_data_compute, bar_width, color=colors[3], hatch=hatches[3], zorder=2,
+    ax.bar(index + bar_width + spacing, in_db_data_compute, bar_width, color=colors[3], hatch=hatches[3], zorder=2,
            bottom=in_db_data_model_load + in_db_data_query + in_db_data_copy_start_py + in_db_data_preprocess,
            label=label_in_db_data_compute, edgecolor='black')
+
+    ax.bar(index + bar_width / 2, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
+           edgecolor='black')
+    ax.bar(index + bar_width / 2, in_db_data_query, bar_width, color=colors[0], hatch=hatches[0], zorder=2,
+           bottom=in_db_data_model_load,
+           edgecolor='black')
+    ax.bar(index + bar_width / 2, in_db_data_copy_start_py, bar_width, color=colors[2], hatch=hatches[2], zorder=2,
+           bottom=in_db_data_model_load + in_db_data_query,
+           edgecolor='black')
+    ax.bar(index + bar_width / 2, in_db_data_compute, bar_width, color=colors[3], hatch=hatches[3], zorder=2,
+           bottom=in_db_data_model_load + in_db_data_query + in_db_data_copy_start_py + in_db_data_preprocess,
+           edgecolor='black')
 
     # # out-db CPU
     out_db_data_query = outcpudb_med["data_query_time"]
     out_db_data_preprocess = outcpudb_med["py_conver_to_tensor"]
     out_db_data_compute = outcpudb_med["py_compute"]
 
-    ax.bar(index + bar_width / 2, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
+    ax.bar(index - bar_width / 2, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
            edgecolor='black')
     ax.bar(index - bar_width / 2, out_db_data_query, bar_width, color=colors[0], hatch=hatches[0], zorder=2,
            bottom=in_db_data_model_load,
@@ -149,6 +165,18 @@ for dataset, valuedic in datasets_result.items():
            bottom=in_db_data_model_load + out_db_data_query,
            edgecolor='black')
     ax.bar(index - bar_width / 2, out_db_data_compute, bar_width, color=colors[3], hatch=hatches[3], zorder=2,
+           bottom=in_db_data_model_load + out_db_data_query + out_db_data_preprocess,
+           edgecolor='black')
+
+    ax.bar(index - bar_width - spacing, in_db_data_model_load, bar_width, color=colors[4], hatch=hatches[4], zorder=2,
+           edgecolor='black')
+    ax.bar(index - bar_width - spacing, out_db_data_query, bar_width, color=colors[0], hatch=hatches[0], zorder=2,
+           bottom=in_db_data_model_load,
+           edgecolor='black')
+    ax.bar(index - bar_width - spacing, out_db_data_preprocess, bar_width, color=colors[2], hatch=hatches[2], zorder=2,
+           bottom=in_db_data_model_load + out_db_data_query,
+           edgecolor='black')
+    ax.bar(index - bar_width - spacing, out_db_data_compute, bar_width, color=colors[3], hatch=hatches[3], zorder=2,
            bottom=in_db_data_model_load + out_db_data_query + out_db_data_preprocess,
            edgecolor='black')
 
@@ -194,25 +222,3 @@ fig.tight_layout()
 print(f"saving to ./internal/ml/model_slicing/exp_imgs/macro_join.pdf")
 fig.savefig(f"./internal/ml/model_slicing/exp_imgs/macro_join.pdf",
             bbox_inches='tight')
-
-"""
-{
-'overall_query_latency': 1.6173694090000001,
-'diff': -0.018389589000000095,
-
-'model_init_time': 0.009314114, 
-
-'data_query_time': 0.781044081, 
-'data_type_convert_time': 0.722756837, 
-'data_query_time_spi': 0.046655084,
-
-'mem_allocate_time': 0.018384798, 
-'python_compute_time': 0.808621625, 
-
-'py_conver_to_tensor': 0.005879878997802734, 
-
-'py_compute': 0.7778224945068359,
-
-'py_overall_duration': 0.8028597831726074, 
-'py_diff': 0.01915740966796875}
-"""

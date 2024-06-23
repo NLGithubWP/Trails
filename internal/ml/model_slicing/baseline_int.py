@@ -52,7 +52,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
                  FROM
                      {database}_int_train_left l
                  JOIN
-                     {database}_int_train_right r ON l.id = r.id where limit {batch_size};""")
+                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
         if database == "credit":
             cur.execute(f"""SELECT
                     l.id,
@@ -73,7 +73,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
                  FROM
                      {database}_int_train_left l
                  JOIN
-                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+                     {database}_int_train_right r ON l.id = r.id where col3=10 and col4=17 limit {batch_size};""")
 
         if database == "hcdr":
             cur.execute(f"""SELECT
@@ -84,7 +84,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
                  FROM
                      {database}_int_train_left l
                  JOIN
-                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+                     {database}_int_train_right r ON l.id = r.id where col33=383 and col38 =425 limit {batch_size};""")
     else:
         cur.execute(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
     rows = cur.fetchall()
@@ -195,7 +195,19 @@ if __name__ == '__main__':
     print()
 
     col_cardinalities = read_json(args.col_cardinalities_file)
-    target_sql = torch.tensor([col[-1] for col in col_cardinalities]).reshape(1, -1)
+
+    # todo: we only test SPJ using this condition.
+    where_cond = {}
+    if args.with_join == 1:
+        if args.dataset == "diabetes":
+            where_cond = {"2": 10, "3": 17}
+        if args.dataset == "hcdr":
+            where_cond = {"32": 383, "37": 425}
+
+    target_sql_list = [col[-1] for col in col_cardinalities]
+    for col_index, value in where_cond.items():
+        target_sql_list[int(col_index)] = value
+    target_sql = torch.tensor(target_sql_list).reshape(1, -1)
 
     net.eval()
     net = net.to(device)

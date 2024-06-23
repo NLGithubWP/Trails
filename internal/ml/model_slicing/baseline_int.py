@@ -52,7 +52,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
                  FROM
                      {database}_int_train_left l
                  JOIN
-                     {database}_int_train_right r ON l.id = r.id limit {batch_size};""")
+                     {database}_int_train_right r ON l.id = r.id where limit {batch_size};""")
         if database == "credit":
             cur.execute(f"""SELECT
                     l.id,

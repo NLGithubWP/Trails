@@ -105,8 +105,9 @@ def visualization(alg, dataset, sorted_ground_truth, sorted_scores):
     plt.grid()
     plt.xlabel('Validation AUC')
     plt.ylabel('Score')
+    plt.yscale('log')
     plt.tight_layout()
-    fig.savefig(f"visua_score_auc_{alg}_{dataset}.jpg", bbox_inches='tight')
+    fig.savefig(f"append_score_{alg}_{dataset}.jpg", bbox_inches='tight')
 
 
 # Call the main function
@@ -117,13 +118,13 @@ if __name__ == "__main__":
     from src.common.constant import CommonVars, Config
 
     # Frappe configuration, here also measure SRCC of top 0.2% -> 0.8%
-    calculate_correlation(Config.Frappe, Config.MLPSP, 13, srcc_top_k=[1], is_visual=False)
+    calculate_correlation(Config.Frappe, Config.MLPSP, 13, srcc_top_k=[1], is_visual=True)
 
     # UCI configuration
-    calculate_correlation(Config.UCIDataset, Config.MLPSP, 0, is_visual=False)
+    calculate_correlation(Config.UCIDataset, Config.MLPSP, 0, is_visual=True)
 
     # Criteo configuration
-    calculate_correlation(Config.Criteo, Config.MLPSP, 9, is_visual=False)
+    calculate_correlation(Config.Criteo, Config.MLPSP, 9, is_visual=True)
 
     # NB101 + C10
     calculate_correlation(Config.c10, Config.NB101, None)

@@ -946,10 +946,14 @@ WHERE col3 = 10 AND col4 = 17;
 Then run the sql
 
 ```sql
+
 # SPJ
 # This is to run such sql to select subdatasets
 select count(*) from diabetes_int_train where col3=10 and col4=17;
 select count(*) from diabetes_int_train where col3=10 and col4=17;
+
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/diabetes/dnn_K16_epoch50 --device cpu --dataset diabetes --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/diabetes_col_cardinalities  --target_batch 100000 --with_join 1
+
 
 SELECT model_init(
     '{"2":10, "3":17}', 
@@ -970,6 +974,7 @@ SELECT run_inference_shared_memory_write_once_int_join(
 
 
 # only selection
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/diabetes/dnn_K16_epoch50 --device cpu --dataset diabetes --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/diabetes_col_cardinalities  --target_batch 100000 --with_join 0
 
 SELECT inference_shared_write_once_int(
     'diabetes', 
@@ -1036,6 +1041,8 @@ Then run the sql
 # This is to run such sql to select subdatasets
 select count(*) from hcdr_int_train where col33=383 and col38 =425;
 
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/hcdr/dnn_K16 --device cpu --dataset hcdr --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/hcdr_col_cardinalities  --target_batch 100000  --with_join 1
+
 SELECT model_init(
     '{"32":383, "37":425}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
@@ -1055,6 +1062,8 @@ SELECT run_inference_shared_memory_write_once_int_join(
 ); 
 
 # only selection
+
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/hcdr/dnn_K16 --device cpu --dataset hcdr --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/hcdr_col_cardinalities  --target_batch 100000  --with_join 0
 
 SELECT inference_shared_write_once_int(
     'hcdr', 

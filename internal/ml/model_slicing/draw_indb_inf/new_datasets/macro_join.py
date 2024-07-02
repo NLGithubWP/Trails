@@ -91,7 +91,7 @@ datasets_result = {
 datasets = list(datasets_result.keys())
 
 # Plotting
-fig, ax = plt.subplots(figsize=(10.4, 4.5))
+fig, ax = plt.subplots(figsize=(6.4, 4.5))
 
 # Initial flags to determine whether the labels have been set before
 set_label_in_db_data_query = True
@@ -243,7 +243,7 @@ for ele in speed_up_list:
 ax.set_ylabel(".", fontsize=20, color='white')
 fig.text(0.01, 0.5, 'Response Time (ms)', va='center', rotation='vertical', fontsize=20)
 
-ax.set_ylim(top=5000)
+ax.set_ylim(top=4500)
 
 ax.set_xticks(indices)
 ax.set_xticklabels(datasets, rotation=0, fontsize=set_font_size)

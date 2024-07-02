@@ -950,7 +950,9 @@ Then run the sql
 # SPJ
 # This is to run such sql to select subdatasets
 select count(*) from diabetes_int_train where col3=10 and col4=17;
-select count(*) from diabetes_int_train where col3=10 and col4=17;
+SELECT count(*) FROM diabetes_int_train_left l
+             JOIN diabetes_int_train_right r ON l.id = r.id
+             where col3=10 and col4=17;
 
 CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/diabetes/dnn_K16_epoch50 --device cpu --dataset diabetes --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/diabetes_col_cardinalities  --target_batch 100000 --with_join 1
 
@@ -985,6 +987,10 @@ SELECT inference_shared_write_once_int(
     'where col3=10 and col4=17', 
     100000
 ); 
+
+
+             
+             
 ```
 
 
@@ -1036,6 +1042,8 @@ WHERE col33 = 383 AND col38 = 425;
 
 Then run the sql
 
+
+
 ```sql
 # SPJ
 # This is to run such sql to select subdatasets
@@ -1074,7 +1082,6 @@ SELECT inference_shared_write_once_int(
     'where col33=383 and col38 =425', 
     100000
 ); 
-
 ```
 
 

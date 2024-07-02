@@ -1,6 +1,6 @@
 
 
-from main import parse_arguments, seed_everything
+from exps.shared_args import parse_arguments, seed_everything
 import os
 import glob
 import json

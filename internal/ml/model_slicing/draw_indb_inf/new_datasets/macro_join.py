@@ -1,9 +1,5 @@
 import json
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import numpy as np
 from matplotlib.ticker import FuncFormatter
-from brokenaxes import brokenaxes
 
 
 def thousands_formatter(x, pos):

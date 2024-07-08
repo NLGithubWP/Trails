@@ -1,10 +1,10 @@
 import os
 import torch
 import argparse
-from model_slicing.algorithm.src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS
+from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS
 import time
 import psycopg2
-from model_slicing.algorithm.src.model.factory import initialize_model
+from src.model import initialize_model
 from typing import Any, List, Dict, Tuple
 import json
 
@@ -28,7 +28,7 @@ def read_json(file_name):
     print(f"Loading {file_name}...")
     is_exist = os.path.exists(file_name)
     if is_exist:
-        with open(file_name, 'r') as readfile:
+        with open(file_name, 'r', encoding='utf-8') as readfile:
             data = json.load(readfile)
         return data
     else:
@@ -204,7 +204,7 @@ if __name__ == '__main__':
         if args.dataset == "hcdr":
             where_cond = {"32": 383, "37": 425}
 
-    target_sql_list = [col[-1] for col in col_cardinalities]
+    target_sql_list = col_cardinalities
     for col_index, value in where_cond.items():
         target_sql_list[int(col_index)] = value
     target_sql = torch.tensor(target_sql_list).reshape(1, -1)

@@ -2,6 +2,7 @@ import os
 import torch
 import argparse
 from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS
+
 print("Read from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS")
 import time
 import psycopg2
@@ -88,6 +89,7 @@ def fetch_and_preprocess(conn, batch_size, database, with_join):
                      {database}_int_train_right r ON l.id = r.id where col33=383 and col38 =425 limit {batch_size};""")
     else:
         cur.execute(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
+        print(f"SELECT * FROM {database}_int_train LIMIT {batch_size}")
     rows = cur.fetchall()
     return rows
 

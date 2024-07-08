@@ -24,6 +24,7 @@ export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/
 export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/algorithm/
 
 
+
 /project/Trails/internal/ml/
 /project/Trails/internal/ml/model_slicing/algorithm:
 /project/Trails/internal/ml/model_slicing:
@@ -95,7 +96,7 @@ docker exec -it moe_inf bash
 
 
 
-# 12 Run in database
+# Load data
 
 Config the database runtime
 
@@ -155,6 +156,10 @@ bash /project/Trails/internal/ml/model_selection/scripts/database/load_data_to_d
 
 # diabetes
 bash /project/Trails/internal/ml/model_selection/scripts/database/load_data_to_db_int.sh /project/data_all/diabetes diabetes
+
+
+# avazu
+bash /project/Trails/internal/ml/model_selection/scripts/database/load_data_to_db_int.sh /project/data_all/avazu_libsvm avazu
 ```
 
 Verify data is in the DB
@@ -649,6 +654,56 @@ FROM hcdr_int_train;
 
 
 # Baseline System & SAMS
+
+## Avazu
+
+Baselines
+
+```bash
+# Avazu
+
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file data/avazu_padding.json --target_batch 100000
+```
+
+System
+
+```sql
+
+SELECT model_init(
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/avazu_padding.json ', 
+    '/project/tensor_log/avazu/dnn_K16'
+); 
+SELECT inference_shared_write_once(
+    'frappe', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/avazu_padding.json ', 
+    '/project/tensor_log/avazu/dnn_K16'
+    '', 
+    100000
+); 
+
+# read int data
+SELECT model_init(
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/avazu_padding.json ', 
+    '/project/tensor_log/avazu/dnn_K16'
+); 
+SELECT inference_shared_write_once_int(
+    'avazu', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/avazu_padding.json ', 
+    '/project/tensor_log/avazu/dnn_K16'
+    '', 
+    100000
+); 
+```
+
+
 
 ## Frappe
 

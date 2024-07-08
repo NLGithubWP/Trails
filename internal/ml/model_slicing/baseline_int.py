@@ -4,7 +4,7 @@ import argparse
 from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS
 import time
 import psycopg2
-from src.model import initialize_model
+from src.model.factory import initialize_model
 from typing import Any, List, Dict, Tuple
 import json
 

@@ -17,10 +17,12 @@ thousands_format = FuncFormatter(thousands_formatter)
 
 from config import *
 
+
 # Helper function to load data
 def load_data(filepath):
     with open(filepath, 'r') as file:
         return json.load(file)
+
 
 def scale_to_ms(latencies):
     result = {}
@@ -89,7 +91,18 @@ datasets_result = {
                        'py_compute': 0.4253865146636963, 'overall_query_latency': 2.9439947605133057},
     },
 
-
+    # Avazu dataset
+    'Avazu': {
+        'In-Db-opt': {'model_init_time': 0.010261666, 'overall_query_latency': 1.180794455,
+                      'python_compute_time': 0.679827295, 'data_query_time': 0.481346969, 'diff': -0.009358524999999895,
+                      'data_type_convert_time': 0.409341057, 'data_query_time_spi': 0.063319582,
+                      'mem_allocate_time': 0.00934968, 'py_conver_to_tensor': 0.003789663314819336,
+                      'py_compute': 0.5585658550262451, 'py_overall_duration': 0.5757725238800049,
+                      'py_diff': 0.01341700553894043},
+        'out-DB-cpu': {'load_model': 1.439990758895874, 'data_query_time': 1.0428671836853027,
+                       'py_conver_to_tensor': 0.1412982940673828, 'tensor_to_gpu': 4.863739013671875e-05,
+                       'py_compute': 0.36997318267822266, 'overall_query_latency': 1.7033264636993408},
+    },
 }
 
 datasets = list(datasets_result.keys())
@@ -194,7 +207,7 @@ fig.text(0.01, 0.5, 'Response Time (ms)', va='center', rotation='vertical', font
 # ax.set_ylim(top=2200)
 
 ax.set_xticks(indices)
-ax.set_xticklabels(datasets, rotation=0, fontsize=set_font_size)
+ax.set_xticklabels(datasets, rotation=0, fontsize=set_font_size-3)
 
 # ax.legend(fontsize=set_lgend_size - 2, ncol=2, )
 # ax.legend(fontsize=set_lgend_size, ncol=2, loc='upper left')

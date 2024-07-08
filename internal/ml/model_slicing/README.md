@@ -663,47 +663,25 @@ Baselines
 
 ```bash
 # Avazu
-
-CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file data/avazu_padding.json --target_batch 100000
-
-
-
-CUDA_VISIBLE_DEVICES=-1 python baseline.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file data/avazu_padding.json --target_batch 100000
+CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/avazu_padding.json --target_batch 100000 --with_join 0
 ```
 
 System
 
 ```sql
-
-SELECT model_init(
-    '{}', 
-    '/project/Trails/internal/ml/model_selection/config.ini', 
-    '/project/Trails/avazu_padding.json ', 
-    '/project/tensor_log/avazu/dnn_K16'
-); 
-SELECT inference_shared_write_once(
-    'frappe', 
-    '{}', 
-    '/project/Trails/internal/ml/model_selection/config.ini', 
-    '/project/Trails/avazu_padding.json ', 
-    '/project/tensor_log/avazu/dnn_K16'
-    '', 
-    100000
-); 
-
 # read int data
 SELECT model_init(
     '{}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
-    '/project/Trails/avazu_padding.json ', 
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
     '/project/tensor_log/avazu/dnn_K16'
 ); 
 SELECT inference_shared_write_once_int(
     'avazu', 
     '{}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
-    '/project/Trails/avazu_padding.json ', 
-    '/project/tensor_log/avazu/dnn_K16'
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
+    '/project/tensor_log/avazu/dnn_K16',
     '', 
     100000
 ); 

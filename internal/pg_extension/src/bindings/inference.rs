@@ -479,6 +479,7 @@ pub fn run_inference_shared_memory_write_once_int_exp(
         "credit" => num_columns = 23+2,
         "diabetes" => num_columns = 48+2,
         "hcdr" => num_columns = 69+2,
+        "avazu" => num_columns = 22+2,
         _ => {},
     }
 
@@ -629,6 +630,7 @@ pub fn run_inference_shared_memory_write_once_int(
         "credit" => num_columns = 23+2,
         "diabetes" => num_columns = 48+2,
         "hcdr" => num_columns = 69+2,
+        "avazu" => num_columns = 22+2,
         _ => {},
     }
 
@@ -797,6 +799,7 @@ pub fn run_inference_shared_memory_write_once_int_join(
         "credit" => num_columns = 23+2,
         "diabetes" => num_columns = 48+2,
         "hcdr" => num_columns = 69+2,
+        "avazu" => num_columns = 22+2,
         _ => {},
     }
 

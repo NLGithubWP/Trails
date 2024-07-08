@@ -72,7 +72,7 @@ def model_inference_load_model(params: dict, args: Namespace):
     try:
         logger.info(f"Received parameters: {params}")
 
-        from model_slicing.algorithm.profile_model import load_model
+        from model_slicing.baseline_int.py import load_model
         # read saved col_cardinatlites file
         if col_cardinalities is None:
             col_cardinalities = read_json(params["col_cardinalities_file"])

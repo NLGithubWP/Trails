@@ -95,7 +95,7 @@ def model_inference_load_model(params: dict, args: Namespace):
 
         if model is None:
             logger.info("Load model .....")
-            model, config = load_model(model_path)
+            model, config = load_model(model_path, "cpu")
             model.eval()
             sliced_model = model.tailor_by_sql(torch.tensor(target_sql).reshape(1, -1))
             sliced_model.eval()

@@ -22,6 +22,8 @@ echo $PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/
 export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/
 export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/algorithm/
+export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/algorithm/src/
+export PYTHONPATH=$PYTHONPATH:/home/xingnaili/Trails/internal/ml/model_slicing/algorithm/src/model/
 
 
 
@@ -663,6 +665,10 @@ Baselines
 # Avazu
 
 CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file data/avazu_padding.json --target_batch 100000
+
+
+
+CUDA_VISIBLE_DEVICES=-1 python baseline.py /hdd1/sams/tensor_log/avazu/dnn_K16 --device cpu --dataset avazu --batch_size 100000 --col_cardinalities_file data/avazu_padding.json --target_batch 100000
 ```
 
 System

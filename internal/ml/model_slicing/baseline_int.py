@@ -2,6 +2,7 @@ import os
 import torch
 import argparse
 from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS
+print("Read from src.model.sparsemax_verticalMoe import SliceModel, SparseMax_VerticalSAMS")
 import time
 import psycopg2
 from src.model.factory import initialize_model

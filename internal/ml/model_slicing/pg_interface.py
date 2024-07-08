@@ -82,10 +82,15 @@ def model_inference_load_model(params: dict, args: Namespace):
 
         # get the where condition
         where_cond = json.loads(params["where_cond"])
-        # generate default sql and selected sql
-        target_sql = [col[-1] for col in col_cardinalities]
+        # todo: this is previous version. It generates default sql and selected sql
+        # target_sql = [col[-1] for col in col_cardinalities]
+        # for col_index, value in where_cond.items():
+        #     target_sql[int(col_index)] = value
+
+        target_sql = col_cardinalities
         for col_index, value in where_cond.items():
             target_sql[int(col_index)] = value
+
         logger.info(f"target_sql encoding is: {target_sql}")
 
         if model is None:

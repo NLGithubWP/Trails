@@ -76,7 +76,7 @@ def model_inference_load_model(params: dict, args: Namespace):
         # read saved col_cardinatlites file
         if col_cardinalities is None:
             col_cardinalities = read_json(params["col_cardinalities_file"])
-
+            logger.info(col_cardinalities)
         # read the model path,
         model_path = params["model_path"]
 

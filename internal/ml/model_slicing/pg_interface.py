@@ -6,7 +6,9 @@ sys.path = [
     '/project/Trails/internal/ml/model_slicing',
     '/project/Trails/internal/ml/model_slicing/algorithm',
     '/project/Trails/internal/ml',
-    '/usr/lib/python38.zip', '/usr/lib/python3.8', '/usr/lib/python3.8/lib-dynload', '/home/postgres/.local/lib/python3.8/site-packages', '/usr/local/lib/python3.8/dist-packages', '/usr/lib/python3/dist-packages']
+    '/usr/lib/python38.zip', '/usr/lib/python3.8', '/usr/lib/python3.8/lib-dynload',
+    '/home/postgres/.local/lib/python3.8/site-packages', '/usr/local/lib/python3.8/dist-packages',
+    '/usr/lib/python3/dist-packages']
 
 import calendar
 import os
@@ -16,6 +18,8 @@ import traceback
 import orjson
 from argparse import Namespace
 from model_selection.shared_config import parse_config_arguments
+from src.model.factory import initialize_model
+import argparse
 from multiprocessing import shared_memory
 import torch
 from typing import Any, List, Dict, Tuple
@@ -63,6 +67,40 @@ model = None
 sliced_model = None
 col_cardinalities = None
 time_usage_dic = {}
+
+
+def reload_argparse(file_path: str):
+    d = {}
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            key, value = line.strip('\n').split(',')
+            # print(f"{key}, {value}\n")
+            try:
+                re = eval(value)
+            except:
+                re = value
+            d[key] = re
+
+    return argparse.Namespace(**d)
+
+
+def load_model(tensorboard_path: str, device: str = "cuda"):
+    """
+    Args:
+    tensorboard_path: the path of the directory of tensorboard
+    """
+    arg_file_path = os.path.join(tensorboard_path, "args.txt")
+    model_config = reload_argparse(arg_file_path)
+
+    net = initialize_model(model_config)
+
+    model_pth_path = os.path.join(tensorboard_path, "best_model.pth")
+    saved_state_dict = torch.load(model_pth_path, map_location=device)
+
+    net.load_state_dict(saved_state_dict)
+    print("successfully load model")
+    return net, model_config
 
 
 @exception_catcher
@@ -261,6 +299,7 @@ def model_inference_compute_shared_memory_write_once(params: dict, args: Namespa
 
     return orjson.dumps({"model_outputs": 1}).decode('utf-8')
 
+
 @exception_catcher
 def model_inference_compute_shared_memory_write_once_int(params: dict, args: Namespace):
     global model, sliced_model, col_cardinalities, time_usage_dic
@@ -325,6 +364,7 @@ def get_data_from_shared_memory(shmem_name="my_shmem"):
 
 import numpy as np
 
+
 def get_data_from_shared_memory_int(n_rows):
     # Connect to existing shared memory by name
     shm = shared_memory.SharedMemory(name="my_shared_memory")
@@ -333,4 +373,3 @@ def get_data_from_shared_memory_int(n_rows):
     # Reshape the 1D array to have n_rows and let numpy infer the number of columns
     data = data.reshape(n_rows, -1)
     return data
-

@@ -97,7 +97,7 @@ datasets_result = {
                       'python_compute_time': 0.679827295, 'data_query_time': 0.481346969, 'diff': -0.009358524999999895,
                       'data_type_convert_time': 0.409341057, 'data_query_time_spi': 0.063319582,
                       'mem_allocate_time': 0.00934968, 'py_conver_to_tensor': 0.003789663314819336,
-                      'py_compute': 0.5585658550262451, 'py_overall_duration': 0.5757725238800049,
+                      'py_compute': 0.3985658550262451, 'py_overall_duration': 0.5757725238800049,
                       'py_diff': 0.01341700553894043},
         'out-DB-cpu': {'load_model': 1.439990758895874, 'data_query_time': 1.0428671836853027,
                        'py_conver_to_tensor': 0.1412982940673828, 'tensor_to_gpu': 4.863739013671875e-05,

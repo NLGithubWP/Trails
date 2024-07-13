@@ -332,6 +332,7 @@ def model_inference_compute_shared_memory_write_once_int(params: dict, args: Nam
                                     (time_usage_dic["py_conver_to_tensor"] + time_usage_dic["py_compute"])
 
         logger.info(f"time usage of inference {len(transformed_data)} rows is {time_usage_dic}")
+        del transformed_data
     except:
         logger.info(orjson.dumps(
             {"Errored": traceback.format_exc()}).decode('utf-8'))

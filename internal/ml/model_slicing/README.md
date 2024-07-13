@@ -1158,6 +1158,8 @@ CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/algorithm/baseline.py
 
 ## Optimizations
 
+### native id:value format
+
 ```bash
 
 # 1. with all opt
@@ -1209,7 +1211,7 @@ SELECT inference(
 CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/algorithm/baseline.py /hdd1/sams/tensor_log/frappe/dnn_K16_alpha4 --device cpu --dataset frappe --batch_size 100000 --col_cardinalities_file frappe_col_cardinalities --target_batch 100000
 ```
 
-Int dataset
+### Only id format
 
 ```bash
 

@@ -844,8 +844,9 @@ pub fn run_inference_w_all_opt_workloads(
     // Start memory monitoring in a separate thread
     start_memory_monitoring(Duration::from_secs(1), monitor_log);
 
+
     let mut num_columns: i32 = 0;
-    match dataset.as_str() {
+    match dataset.as_str() {  // assuming dataset is a String
         "frappe" => num_columns = 12,
         "adult" => num_columns = 15,
         "cvd" => num_columns = 13,
@@ -869,24 +870,13 @@ pub fn run_inference_w_all_opt_workloads(
     task_map.insert("model_path", model_path.clone());
     let task_json = json!(task_map).to_string();
 
-    // Cache a state once
+    // here it cache a state once
     run_python_function(
         &PY_MODULE_INFERENCE,
         &task_json,
-        "model_inference_load_model",
-    );
+        "model_inference_load_model");
 
-    // Allocate shared memory once
-    let shmem_size = 4 * batch_size as usize * num_columns as usize;
-    let shmem_name = "my_shared_memory";
-    let mut my_shmem = ShmemConf::new()
-        .size(shmem_size)
-        .os_id(shmem_name)
-        .create()
-        .unwrap();
-    let shmem_ptr = my_shmem.as_ptr() as *mut i32;
-
-    // Execute workloads
+    // execute workloads
     let mut nquery = 0;
     while nquery < 100 {
         let mut response = HashMap::new();
@@ -928,16 +918,21 @@ pub fn run_inference_w_all_opt_workloads(
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
-        // Step 3: Putting all data to the shared memory (reusing the same shared memory)
+        // Step 3: Putting all data to he shared memory
         let start_time = Instant::now();
+        let shmem_name = "my_shared_memory";
+        let my_shmem = ShmemConf::new()
+            .size(4 * all_rows.len())
+            .os_id(shmem_name)
+            .create()
+            .unwrap();
+        let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
         unsafe {
-            // Clear the shared memory by setting it to zeros
-            std::ptr::write_bytes(shmem_ptr, 0, shmem_size);
-            // Copy new data into shared memory
+            // Copy data into shared memory
             std::ptr::copy_nonoverlapping(
                 all_rows.as_ptr(),
-                shmem_ptr,
+                shmem_ptr as *mut i32,
                 all_rows.len(),
             );
         }
@@ -946,19 +941,18 @@ pub fn run_inference_w_all_opt_workloads(
         response.insert("mem_allocate_time", mem_allocate_time.clone());
 
         let start_time = Instant::now();
-        // Step 4: model evaluate in Python
+        // Step 3: model evaluate in Python
         let mut eva_task_map = HashMap::new();
         eva_task_map.insert("config_file", config_file.clone());
         eva_task_map.insert("spi_seconds", data_query_time.to_string());
         eva_task_map.insert("rows", batch_size.to_string());
 
-        let eva_task_json = json!(eva_task_map).to_string();
+        let eva_task_json = json!(eva_task_map).to_string(); // Corrected this line
 
         run_python_function(
             &PY_MODULE_INFERENCE,
             &eva_task_json,
-            "model_inference_compute_shared_memory_write_once_int",
-        );
+            "model_inference_compute_shared_memory_write_once_int");
 
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();
@@ -971,10 +965,6 @@ pub fn run_inference_w_all_opt_workloads(
 
         let response_json = json!(response).to_string();
         overall_response.insert(nquery.to_string(), response_json);
-
-        // Explicitly drop large data structures to free memory
-        drop(all_rows);
-
         nquery += 1;
     }
 
@@ -987,14 +977,14 @@ pub fn run_inference_w_all_opt_workloads(
 
     let overall_response_json = serde_json::to_string(&json!(overall_response)).unwrap();
 
+
     run_python_function(
         &PY_MODULE_INFERENCE,
         &overall_response_json,
-        "records_results",
-    );
+        "records_results");
 
-    // Return response to PostgreSQL
-    serde_json::json!("ok")
+    // Step 4: Return to PostgresSQL
+    return serde_json::json!("ok");
 }
 
 

@@ -843,7 +843,7 @@ pub fn run_inference_w_all_opt_workloads(
     let monitor_log = Arc::clone(&memory_log);
 
     // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_millis(100), monitor_log);
+    start_memory_monitoring(Duration::from_millis(0.5), monitor_log);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,

@@ -176,7 +176,7 @@ SELECT * FROM frappe_train LIMIT 10;
 # Config Extension
 
 ```sql
-
+psql -h localhost -p 28814 -U postgres 
 # record the necessary func above and then copy it to following
 rm /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
 vi /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql

@@ -5,7 +5,6 @@ use pgrx::prelude::*;
 use crate::bindings::ml_register::PY_MODULE_INFERENCE;
 use crate::bindings::ml_register::run_python_function;
 use crate::utils::monitor::start_memory_monitoring;
-use std::time::{Instant};
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};

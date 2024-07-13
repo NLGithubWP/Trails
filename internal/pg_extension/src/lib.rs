@@ -327,8 +327,8 @@ pub fn run_inference_profiling(
             batch_size,
         ) {
             Ok(_) => serde_json::json!("ok").to_string(),
-            Err(e) => serde_json::json!(format!("Error: {}", e)).to_string(),
+            Err(e) => serde_json::json!({ "error": format!("Error: {}", e) }).to_string(),
         },
-        _ => serde_json::json!("Invalid argument").to_string(),
+        _ => serde_json::json!({ "error": "Invalid function number" }).to_string(),
     }
 }

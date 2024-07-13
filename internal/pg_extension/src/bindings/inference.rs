@@ -925,8 +925,7 @@ pub fn run_inference_w_all_opt_workloads(
             let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
             response.insert("data_type_convert_time", data_query_time_min3.clone());
 
-            // Return OK or some status
-            Ok(())
+            Ok::<(), String>(()) // Specify the type explicitly
         })?;
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();

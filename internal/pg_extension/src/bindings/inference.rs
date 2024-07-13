@@ -7,7 +7,7 @@ use crate::bindings::ml_register::run_python_function;
 use crate::utils::monitor::start_memory_monitoring;
 use std::time::{Instant};
 use shared_memory::*;
-
+use std::sync::{Arc, Mutex};
 
 pub fn run_inference_shared_memory(
     dataset: &String,
@@ -838,7 +838,6 @@ pub fn run_inference_w_all_opt_workloads(
     sql: &String,
     batch_size: i32,
 ) -> serde_json::Value {
-
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
@@ -876,14 +875,15 @@ pub fn run_inference_w_all_opt_workloads(
         &PY_MODULE_INFERENCE,
         &task_json,
         "model_inference_load_model");
-    let _end_time = Instant::now();
-    let model_init_time = _end_time.duration_since(overall_start_time).as_secs_f64();
-    response.insert("model_init_time", model_init_time.clone());
 
     // execute workloads
     let mut nquery = 0;
     while nquery < 100 {
         let mut response = HashMap::new();
+
+        let _end_time = Instant::now();
+        let model_init_time = _end_time.duration_since(overall_start_time).as_secs_f64();
+        response.insert("model_init_time", model_init_time.clone());
 
         // Step 1: query data
         let start_time = Instant::now();
@@ -981,7 +981,7 @@ pub fn run_inference_w_all_opt_workloads(
         "records_results");
 
     // Step 4: Return to PostgresSQL
-    return "ok";
+    return serde_json::json!("ok");
 }
 
 

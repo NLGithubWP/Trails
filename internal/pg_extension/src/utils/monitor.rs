@@ -1,3 +1,8 @@
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{Duration, Instant};
+use sysinfo::{System, SystemExt, ProcessExt};
+
 fn start_memory_monitoring(interval: Duration, memory_log: Arc<Mutex<Vec<(f64, u64)>>>) {
     let pid = std::process::id() as i32;
     let mut system = System::new_all();

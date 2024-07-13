@@ -4,6 +4,7 @@ use serde_json::json;
 use std::collections::HashMap;
 
 pub mod bindings;
+pub mod utils;
 
 extern crate serde_derive;
 

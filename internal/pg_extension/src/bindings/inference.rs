@@ -969,11 +969,13 @@ pub fn run_inference_w_all_opt_workloads(
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
-    overall_response.insert("overall_time_usage", overall_time_usage.clone().to_string());
+    overall_response.insert("overall_time_usage", serde_json::json!(overall_time_usage));
 
     let end_memory_log = memory_log.lock().unwrap();
-    overall_response.insert("memory_log", json!(end_memory_log.clone()));
-    let overall_response_json = json!(overall_response).to_string();
+    overall_response.insert("memory_log", serde_json::json!(end_memory_log.clone()));
+
+    let overall_response_json = serde_json::json!(overall_response).to_string();
+
 
     run_python_function(
         &PY_MODULE_INFERENCE,

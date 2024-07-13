@@ -978,9 +978,6 @@ pub fn run_inference_w_all_opt_workloads(
         &overall_response_json,
         "records_results",
     );
-
-    // Explicitly remove the shared memory
-    my_shmem.unlink().map_err(|e| e.to_string())?;
     Ok(())
 }
 

@@ -868,8 +868,8 @@ pub fn run_inference_w_all_opt_workloads(
     task_map.insert("model_path", model_path.clone());
     let task_json = json!(task_map).to_string();
 
-    // Allocate shared memory once
-    let shmem_size = 4 * batch_size as usize * num_columns as usize;
+    // Allocate shared memory once, here is not primary key and id
+    let shmem_size = 4 * batch_size as usize * (num_columns-2) as usize;
     let shmem_name = "my_shared_memory";
     let my_shmem = ShmemConf::new()
         .size(shmem_size)

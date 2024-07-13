@@ -183,7 +183,7 @@ vi /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.s
 
 # after run the pgrx, then edie the sql
 # generate schema
-cargo pgrx schema >> /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
+cargo pgrx schema >> /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql --rel
 
 
 # then drop/create extension

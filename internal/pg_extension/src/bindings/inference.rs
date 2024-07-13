@@ -9,7 +9,6 @@ use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use std::thread::sleep;
-use std::time::Duration;
 
 pub fn run_inference_shared_memory(
     dataset: &String,

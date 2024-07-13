@@ -843,7 +843,7 @@ pub fn run_inference_w_all_opt_workloads(
     let monitor_log = Arc::clone(&memory_log);
 
     // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_millis(0.5), monitor_log);
+    start_memory_monitoring(Duration::from_seconds(1), monitor_log);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -888,7 +888,7 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Execute workloads
     let mut nquery = 0;
-    while nquery < 100 {
+    while nquery < 1000 {
         let mut response = HashMap::new();
 
         let _end_time = Instant::now();

@@ -837,7 +837,7 @@ pub fn run_inference_w_all_opt_workloads(
     model_path: &String,
     sql: &String,
     batch_size: i32,
-) -> serde_json::Value {
+) -> Result<(), String> {
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
@@ -870,12 +870,6 @@ pub fn run_inference_w_all_opt_workloads(
     task_map.insert("model_path", model_path.clone());
     let task_json = json!(task_map).to_string();
 
-    // here it cache a state once
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "model_inference_load_model");
-
     // Allocate shared memory once
     let shmem_size = 4 * batch_size as usize * num_columns as usize;
     let shmem_name = "my_shared_memory";
@@ -886,7 +880,7 @@ pub fn run_inference_w_all_opt_workloads(
         .unwrap();
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-        // here it cache a state once
+    // here it cache a state once
     run_python_function(
         &PY_MODULE_INFERENCE,
         &task_json,
@@ -985,8 +979,9 @@ pub fn run_inference_w_all_opt_workloads(
         "records_results",
     );
 
-    // Return response to PostgreSQL
-    serde_json::json!("ok")
+    // Explicitly remove the shared memory
+    my_shmem.unlink().map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 

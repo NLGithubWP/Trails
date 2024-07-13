@@ -317,7 +317,7 @@ pub fn run_inference_profiling(
     batch_size: i32,
 ) -> String {
     match func_num {
-        1 => crate::bindings::inference::run_inference_w_all_opt_workloads(
+        1 => match crate::bindings::inference::run_inference_w_all_opt_workloads(
             &dataset,
             &condition,
             &config_file,
@@ -325,37 +325,49 @@ pub fn run_inference_profiling(
             &model_path,
             &sql,
             batch_size,
-        ).to_string(),
+        ) {
+            Ok(_) => "ok".to_string(),
+            Err(e) => format!("Error: {}", e),
+        },
 
-        2 => crate::bindings::inference::run_inference_wo_cache_workloads(
-            &dataset,
-            &condition,
-            &config_file,
-            &col_cardinalities_file,
-            &model_path,
-            &sql,
-            batch_size,
-        ).to_string(),
-
-        3 => crate::bindings::inference::run_inference_wo_memoryshare_workloads(
-            &dataset,
-            &condition,
-            &config_file,
-            &col_cardinalities_file,
-            &model_path,
-            &sql,
-            batch_size,
-        ).to_string(),
-
-        4 => crate::bindings::inference::run_inference_wo_all_opt_workloads(
-            &dataset,
-            &condition,
-            &config_file,
-            &col_cardinalities_file,
-            &model_path,
-            &sql,
-            batch_size,
-        ).to_string(),
+        // 2 => match crate::bindings::inference::run_inference_wo_cache_workloads(
+        //     &dataset,
+        //     &condition,
+        //     &config_file,
+        //     &col_cardinalities_file,
+        //     &model_path,
+        //     &sql,
+        //     batch_size,
+        // ) {
+        //     Ok(_) => "ok".to_string(),
+        //     Err(e) => format!("Error: {}", e),
+        // },
+        //
+        // 3 => match crate::bindings::inference::run_inference_wo_memoryshare_workloads(
+        //     &dataset,
+        //     &condition,
+        //     &config_file,
+        //     &col_cardinalities_file,
+        //     &model_path,
+        //     &sql,
+        //     batch_size,
+        // ) {
+        //     Ok(_) => "ok".to_string(),
+        //     Err(e) => format!("Error: {}", e),
+        // },
+        //
+        // 4 => match crate::bindings::inference::run_inference_wo_all_opt_workloads(
+        //     &dataset,
+        //     &condition,
+        //     &config_file,
+        //     &col_cardinalities_file,
+        //     &model_path,
+        //     &sql,
+        //     batch_size,
+        // ) {
+        //     Ok(_) => "ok".to_string(),
+        //     Err(e) => format!("Error: {}", e),
+        // },
 
         _ => String::from("Invalid function number"),
     }

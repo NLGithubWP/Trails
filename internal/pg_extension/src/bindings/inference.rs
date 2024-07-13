@@ -961,6 +961,7 @@ pub fn run_inference_w_all_opt_workloads(
         let overall_end_time = Instant::now();
         let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
+        response.insert("diff_time", diff_time.clone());
 
         let response_json = json!(response).to_string();
         overall_response.insert(nquery.to_string(), response_json);

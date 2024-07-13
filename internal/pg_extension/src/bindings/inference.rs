@@ -946,7 +946,7 @@ pub fn run_inference_w_all_opt_workloads(
         run_python_function(
             &PY_MODULE_INFERENCE,
             &eva_task_json,
-            "model_inference_compute_shared_memory_write_once_int"
+            "model_inference_compute_shared_memory_write_once_int",
         );
 
         let end_time = Instant::now();
@@ -976,7 +976,7 @@ pub fn run_inference_w_all_opt_workloads(
     run_python_function(
         &PY_MODULE_INFERENCE,
         &overall_response_json,
-        "records_results"
+        "records_results",
     );
 
     // Return response to PostgreSQL

@@ -8,6 +8,8 @@ use crate::utils::monitor::start_memory_monitoring;
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
+use std::thread::sleep;
+use std::time::Duration;
 
 pub fn run_inference_shared_memory(
     dataset: &String,
@@ -869,7 +871,7 @@ pub fn run_inference_w_all_opt_workloads(
     let task_json = json!(task_map).to_string();
 
     // Allocate shared memory once, here is not primary key and id
-    let shmem_size = 4 * batch_size as usize * (num_columns-2) as usize;
+    let shmem_size = 4 * batch_size as usize * (num_columns - 2) as usize;
     let shmem_name = "my_shared_memory";
     let my_shmem = ShmemConf::new()
         .size(shmem_size)
@@ -935,19 +937,23 @@ pub fn run_inference_w_all_opt_workloads(
         response.insert("mem_allocate_time", mem_allocate_time.clone());
 
         let start_time = Instant::now();
+
         // Step 4: model evaluate in Python
-        let mut eva_task_map = HashMap::new();
-        eva_task_map.insert("config_file", config_file.clone());
-        eva_task_map.insert("spi_seconds", data_query_time.to_string());
-        eva_task_map.insert("rows", batch_size.to_string());
+        // let mut eva_task_map = HashMap::new();
+        // eva_task_map.insert("config_file", config_file.clone());
+        // eva_task_map.insert("spi_seconds", data_query_time.to_string());
+        // eva_task_map.insert("rows", batch_size.to_string());
+        //
+        // let eva_task_json = json!(eva_task_map).to_string();
+        //
+        // run_python_function(
+        //     &PY_MODULE_INFERENCE,
+        //     &eva_task_json,
+        //     "model_inference_compute_shared_memory_write_once_int",
+        // );
 
-        let eva_task_json = json!(eva_task_map).to_string();
-
-        run_python_function(
-            &PY_MODULE_INFERENCE,
-            &eva_task_json,
-            "model_inference_compute_shared_memory_write_once_int",
-        );
+        // Step 4: simulate model evaluate in Python by sleeping
+        sleep(Duration::from_secs(2)); // simulate time taken by Python function
 
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();

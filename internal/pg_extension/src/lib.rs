@@ -307,38 +307,53 @@ pub fn model_init(
 #[allow(unused_variables)]
 pub fn run_inference_profiling(
     func_num: i32,
+    dataset: String,
     condition: String,
     config_file: String,
     col_cardinalities_file: String,
     model_path: String,
+    sql: String,
+    batch_size: i32,
 ) -> String {
     match func_num {
         1 => crate::bindings::inference::run_inference_w_all_opt_workloads(
+            &dataset,
             &condition,
             &config_file,
             &col_cardinalities_file,
             &model_path,
+            &sql,
+            batch_size,
         ).to_string(),
 
         2 => crate::bindings::inference::run_inference_wo_cache_workloads(
+            &dataset,
             &condition,
             &config_file,
             &col_cardinalities_file,
             &model_path,
+            &sql,
+            batch_size,
         ).to_string(),
 
         3 => crate::bindings::inference::run_inference_wo_memoryshare_workloads(
+            &dataset,
             &condition,
             &config_file,
             &col_cardinalities_file,
             &model_path,
+            &sql,
+            batch_size,
         ).to_string(),
 
         4 => crate::bindings::inference::run_inference_wo_all_opt_workloads(
+            &dataset,
             &condition,
             &config_file,
             &col_cardinalities_file,
             &model_path,
+            &sql,
+            batch_size,
         ).to_string(),
 
         _ => String::from("Invalid function number"),

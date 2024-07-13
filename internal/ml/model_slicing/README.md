@@ -1266,6 +1266,65 @@ CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/algorithm/baseline.py
 CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1/sams/tensor_log/credit/dnn_K16_epoch50 --device cpu --dataset credit --batch_size 100000 --col_cardinalities_file ./internal/ml/model_slicing/data/credit_col_cardinalities  --target_batch 100000
 ```
 
+### Memory, Response Time
+
+```sql
+
+# 1. with all opt
+SELECT run_inference_profiling(
+	  1,
+    'avazu', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
+    '/project/tensor_log/avazu/dnn_K16',
+    '', 
+    100000
+); 
+
+# 2. w/o cache
+SELECT model_init(
+	  2,
+    'avazu', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
+    '/project/tensor_log/avazu/dnn_K16',
+    '', 
+    100000
+); 
+
+
+# 3. w/o memory share
+SELECT model_init(
+	  3,
+    'avazu', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
+    '/project/tensor_log/avazu/dnn_K16',
+    '', 
+    100000
+); 
+
+
+# 4. w/o all opt
+SELECT model_init(
+	  4,
+    'avazu', 
+    '{}', 
+    '/project/Trails/internal/ml/model_selection/config.ini', 
+    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
+    '/project/tensor_log/avazu/dnn_K16',
+    '', 
+    100000
+); 
+
+
+
+
+```
+
 
 
 

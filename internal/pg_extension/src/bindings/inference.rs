@@ -887,7 +887,7 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Execute workloads
     let mut nquery = 0;
-    while nquery < 2 {
+    while nquery < 100 {
         let mut response = HashMap::new();
 
         let _end_time = Instant::now();

@@ -176,13 +176,15 @@ SELECT * FROM frappe_train LIMIT 10;
 # Config Extension
 
 ```sql
-# after run the pgrx, then edie the sql
-# generate schema
-cargo pgrx schema >> /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
 
 # record the necessary func above and then copy it to following
 rm /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
 vi /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
+
+# after run the pgrx, then edie the sql
+# generate schema
+cargo pgrx schema >> /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
+
 
 # then drop/create extension
 DROP EXTENSION IF EXISTS pg_extension;

@@ -173,86 +173,12 @@ Verify data is in the DB
 SELECT * FROM frappe_train LIMIT 10;
 ```
 
-Config
+# Config Extension
 
 ```sql
 # after run the pgrx, then edie the sql
 # generate schema
 cargo pgrx schema >> /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
-
-
--- src/lib.rs:266
--- pg_extension::model_init
-CREATE  FUNCTION "model_init"(
-	"condition" TEXT, /* alloc::string::String */
-	"config_file" TEXT, /* alloc::string::String */
-	"col_cardinalities_file" TEXT, /* alloc::string::String */
-	"model_path" TEXT /* alloc::string::String */
-) RETURNS TEXT /* alloc::string::String */
-IMMUTABLE STRICT PARALLEL SAFE 
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'model_init_wrapper';
-
--- src/lib.rs:242
--- pg_extension::inference_shared_write_once_int
-CREATE  FUNCTION "inference_shared_write_once_int"(
-	"dataset" TEXT, /* alloc::string::String */
-	"condition" TEXT, /* alloc::string::String */
-	"config_file" TEXT, /* alloc::string::String */
-	"col_cardinalities_file" TEXT, /* alloc::string::String */
-	"model_path" TEXT, /* alloc::string::String */
-	"sql" TEXT, /* alloc::string::String */
-	"batch_size" INT /* i32 */
-) RETURNS TEXT /* alloc::string::String */
-IMMUTABLE STRICT PARALLEL SAFE 
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'inference_shared_write_once_int_wrapper';
-
--- src/lib.rs:219
--- pg_extension::inference_shared_write_once
-CREATE  FUNCTION "inference_shared_write_once"(
-	"dataset" TEXT, /* alloc::string::String */
-	"condition" TEXT, /* alloc::string::String */
-	"config_file" TEXT, /* alloc::string::String */
-	"col_cardinalities_file" TEXT, /* alloc::string::String */
-	"model_path" TEXT, /* alloc::string::String */
-	"sql" TEXT, /* alloc::string::String */
-	"batch_size" INT /* i32 */
-) RETURNS TEXT /* alloc::string::String */
-IMMUTABLE STRICT PARALLEL SAFE 
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'inference_shared_write_once_wrapper';
-
--- src/lib.rs:196
--- pg_extension::inference_shared
-CREATE  FUNCTION "inference_shared"(
-	"dataset" TEXT, /* alloc::string::String */
-	"condition" TEXT, /* alloc::string::String */
-	"config_file" TEXT, /* alloc::string::String */
-	"col_cardinalities_file" TEXT, /* alloc::string::String */
-	"model_path" TEXT, /* alloc::string::String */
-	"sql" TEXT, /* alloc::string::String */
-	"batch_size" INT /* i32 */
-) RETURNS TEXT /* alloc::string::String */
-IMMUTABLE STRICT PARALLEL SAFE 
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'run_inference_shared_wrapper';
-
--- src/lib.rs:173
--- pg_extension::inference
-CREATE  FUNCTION "inference"(
-	"dataset" TEXT, /* alloc::string::String */
-	"condition" TEXT, /* alloc::string::String */
-	"config_file" TEXT, /* alloc::string::String */
-	"col_cardinalities_file" TEXT, /* alloc::string::String */
-	"model_path" TEXT, /* alloc::string::String */
-	"sql" TEXT, /* alloc::string::String */
-	"batch_size" INT /* i32 */
-) RETURNS TEXT /* alloc::string::String */
-IMMUTABLE STRICT PARALLEL SAFE 
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', 'run_inference_wrapper';
-
 
 # record the necessary func above and then copy it to following
 rm /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
@@ -261,6 +187,8 @@ vi /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.s
 # then drop/create extension
 DROP EXTENSION IF EXISTS pg_extension;
 CREATE EXTENSION pg_extension;
+
+cd /home/postgres/.pgrx/data-14/trails_log_folder
 ```
 
 Examples
@@ -1279,7 +1207,7 @@ SELECT run_inference_profiling(
     '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
     '/project/tensor_log/avazu/dnn_K16',
     '', 
-    100000
+    500
 ); 
 
 # 2. w/o cache

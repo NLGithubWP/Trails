@@ -326,49 +326,9 @@ pub fn run_inference_profiling(
             &sql,
             batch_size,
         ) {
-            Ok(_) => "ok".to_string(),
-            Err(e) => format!("Error: {}", e),
+            Ok(_) => serde_json::json!("ok").to_string(),
+            Err(e) => serde_json::json!(format!("Error: {}", e)).to_string(),
         },
-
-        // 2 => match crate::bindings::inference::run_inference_wo_cache_workloads(
-        //     &dataset,
-        //     &condition,
-        //     &config_file,
-        //     &col_cardinalities_file,
-        //     &model_path,
-        //     &sql,
-        //     batch_size,
-        // ) {
-        //     Ok(_) => "ok".to_string(),
-        //     Err(e) => format!("Error: {}", e),
-        // },
-        //
-        // 3 => match crate::bindings::inference::run_inference_wo_memoryshare_workloads(
-        //     &dataset,
-        //     &condition,
-        //     &config_file,
-        //     &col_cardinalities_file,
-        //     &model_path,
-        //     &sql,
-        //     batch_size,
-        // ) {
-        //     Ok(_) => "ok".to_string(),
-        //     Err(e) => format!("Error: {}", e),
-        // },
-        //
-        // 4 => match crate::bindings::inference::run_inference_wo_all_opt_workloads(
-        //     &dataset,
-        //     &condition,
-        //     &config_file,
-        //     &col_cardinalities_file,
-        //     &model_path,
-        //     &sql,
-        //     batch_size,
-        // ) {
-        //     Ok(_) => "ok".to_string(),
-        //     Err(e) => format!("Error: {}", e),
-        // },
-
-        _ => String::from("Invalid function number"),
+        _ => serde_json::json!("invalud argiment").to_string(),
     }
 }

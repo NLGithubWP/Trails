@@ -844,20 +844,18 @@ pub fn run_inference_w_all_opt_workloads(
     // Start memory monitoring in a separate thread
     start_memory_monitoring(Duration::from_secs(1), monitor_log);
 
-
-    let mut num_columns: i32 = 0;
-    match dataset.as_str() {  // assuming dataset is a String
-        "frappe" => num_columns = 12,
-        "adult" => num_columns = 15,
-        "cvd" => num_columns = 13,
-        "bank" => num_columns = 18,
-        "census" => num_columns = 41 + 2,
-        "credit" => num_columns = 23 + 2,
-        "diabetes" => num_columns = 48 + 2,
-        "hcdr" => num_columns = 69 + 2,
-        "avazu" => num_columns = 22 + 2,
-        _ => {}
-    }
+    let num_columns: i32 = match dataset.as_str() {
+        "frappe" => 12,
+        "adult" => 15,
+        "cvd" => 13,
+        "bank" => 18,
+        "census" => 41 + 2,
+        "credit" => 23 + 2,
+        "diabetes" => 48 + 2,
+        "hcdr" => 69 + 2,
+        "avazu" => 22 + 2,
+        _ => return Err(format!("Unknown dataset: {}", dataset)),
+    };
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
@@ -877,14 +875,15 @@ pub fn run_inference_w_all_opt_workloads(
         .size(shmem_size)
         .os_id(shmem_name)
         .create()
-        .unwrap();
+        .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    // here it cache a state once
+    // Here it cache a state once
     run_python_function(
         &PY_MODULE_INFERENCE,
         &task_json,
-        "model_inference_load_model");
+        "model_inference_load_model",
+    );
 
     // Execute workloads
     let mut nquery = 0;
@@ -897,13 +896,15 @@ pub fn run_inference_w_all_opt_workloads(
 
         // Step 1: query data
         let start_time = Instant::now();
-        let _ = Spi::connect(|client| {
-            let query = format!("SELECT * FROM {}_int_train {} LIMIT {}", dataset, sql, batch_size);
+        Spi::connect(|client| {
+            let query = format!(
+                "SELECT * FROM {}_int_train {} LIMIT {}",
+                dataset, sql, batch_size
+            );
             let mut cursor = client.open_cursor(&query, None);
-            let table = match cursor.fetch(batch_size as c_long) {
-                Ok(table) => table,
-                Err(e) => return Err(e.to_string()),
-            };
+            let table = cursor.fetch(batch_size as c_long)
+                .map_err(|e| e.to_string())?;
+
             let end_time = Instant::now();
             let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
             response.insert("data_query_time_spi", data_query_time_spi);
@@ -926,7 +927,7 @@ pub fn run_inference_w_all_opt_workloads(
 
             // Return OK or some status
             Ok(())
-        });
+        })?;
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
@@ -968,16 +969,17 @@ pub fn run_inference_w_all_opt_workloads(
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
 
-    let end_memory_log = memory_log.lock().unwrap();
+    let end_memory_log = memory_log.lock().map_err(|e| e.to_string())?;
     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(end_memory_log.clone())).unwrap());
 
-    let overall_response_json = serde_json::to_string(&json!(overall_response)).unwrap();
+    let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
     run_python_function(
         &PY_MODULE_INFERENCE,
         &overall_response_json,
         "records_results",
     );
+
     Ok(())
 }
 

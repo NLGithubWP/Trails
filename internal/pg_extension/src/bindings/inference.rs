@@ -8,6 +8,7 @@ use crate::utils::monitor::start_memory_monitoring;
 use std::time::{Instant};
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 pub fn run_inference_shared_memory(
     dataset: &String,
@@ -963,13 +964,13 @@ pub fn run_inference_w_all_opt_workloads(
         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
 
         let response_json = json!(response).to_string();
-        overall_response.insert(nquery, response_json);
+        overall_response.insert(nquery.to_string(), response_json);
         nquery += 1;
     }
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
-    overall_response.insert("overall_time_usage", overall_time_usage.clone());
+    overall_response.insert("overall_time_usage", overall_time_usage.clone().to_string());
 
     let end_memory_log = memory_log.lock().unwrap();
     overall_response.insert("memory_log", json!(end_memory_log.clone()));

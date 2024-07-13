@@ -958,8 +958,8 @@ pub fn run_inference_w_all_opt_workloads(
         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
         response.insert("diff_time", diff_time.clone());
 
-        let response_json = json!(response).to_string();
-        overall_response.insert(nquery.to_string(), response_json);
+        // let response_json = json!(response).to_string();
+        // overall_response.insert(nquery.to_string(), response_json);
 
         nquery += 1;
     }

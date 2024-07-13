@@ -329,6 +329,6 @@ pub fn run_inference_profiling(
             Ok(_) => serde_json::json!("ok").to_string(),
             Err(e) => serde_json::json!(format!("Error: {}", e)).to_string(),
         },
-        _ => serde_json::json!("invalud argiment").to_string(),
+        _ => serde_json::json!("Invalid argument").to_string(),
     }
 }

@@ -877,7 +877,7 @@ pub fn run_inference_w_all_opt_workloads(
     );
 
     // Allocate shared memory once
-    let shmem_size = 4 * batch_size * num_columns as usize;
+    let shmem_size = 4 * batch_size as usize * num_columns as usize;
     let shmem_name = "my_shared_memory";
     let mut my_shmem = ShmemConf::new()
         .size(shmem_size)

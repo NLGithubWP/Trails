@@ -886,6 +886,12 @@ pub fn run_inference_w_all_opt_workloads(
         .unwrap();
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
+        // here it cache a state once
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "model_inference_load_model");
+
     // Execute workloads
     let mut nquery = 0;
     while nquery < 100 {

@@ -320,8 +320,7 @@ def model_inference_compute_shared_memory_write_once_int(params: dict, args: Nam
         logger.info(f"transformed data size: {transformed_data.size()}")
 
         begin = time.time()
-        # y = sliced_model(transformed_data, None)
-        y = torch.tensor([1, 2, 3])
+        y = sliced_model(transformed_data, None)
         time_usage_dic["py_compute"] = time.time() - begin
         logger.info(f"Prediction Results = {y.tolist()[:2]}...")
 

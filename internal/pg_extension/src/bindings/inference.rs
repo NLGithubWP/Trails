@@ -846,7 +846,7 @@ pub fn run_inference_w_all_opt_workloads(
     let overall_start_time = Instant::now();
 
     // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
+    // start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,

@@ -115,7 +115,6 @@ def init_log(params: dict, args: Namespace):
     return orjson.dumps({"ok": 1}).decode('utf-8')
 
 
-
 @exception_catcher
 def model_inference_load_model(params: dict, args: Namespace):
     global model, sliced_model, col_cardinalities
@@ -156,6 +155,68 @@ def model_inference_load_model(params: dict, args: Namespace):
         logger.info(orjson.dumps(
             {"Errored": traceback.format_exc()}).decode('utf-8'))
     return orjson.dumps({"ok": 1}).decode('utf-8')
+
+
+@exception_catcher
+def load_model_inference(params: dict, args: Namespace):
+    global col_cardinalities, time_usage_dic
+    from model_selection.src.logger import logger
+    time_usage_dic = {}
+
+    try:
+        logger.info(f"Received parameters: {params}")
+
+        # read saved col_cardinatlites file
+        if col_cardinalities is None:
+            col_cardinalities = read_json(params["col_cardinalities_file"])
+            logger.info(col_cardinalities)
+        # read the model path,
+        model_path = params["model_path"]
+        where_cond = json.loads(params["where_cond"])
+
+        target_sql = col_cardinalities
+        for col_index, value in where_cond.items():
+            target_sql[int(col_index)] = value
+        logger.info(f"target_sql encoding is: {target_sql}")
+        logger.info("Load model .....")
+        _model, config = load_model(model_path, "cpu")
+        _model.eval()
+        _sliced_model = _model.tailor_by_sql(torch.tensor(target_sql).reshape(1, -1))
+        _sliced_model.eval()
+        logger.info("Load model Done!")
+
+        mini_batch_shared = get_data_from_shared_memory_int(int(params["rows"]))
+        # logger.info(f"mini_batch_shared: <-{mini_batch_shared[:50]}->, type: {type(mini_batch_shared)}")
+        logger.info(f"mini_batch_shared: <-{mini_batch_shared}->, type: {type(mini_batch_shared)}")
+
+        overall_begin = time.time()
+        logger.info("-----" * 10)
+
+        begin = time.time()
+        # pre-processing mini_batch
+        transformed_data = torch.LongTensor(mini_batch_shared)
+        time_usage_dic["py_conver_to_tensor"] = time.time() - begin
+        logger.info(f"transformed data size: {transformed_data.size()}")
+
+        begin = time.time()
+        y = _sliced_model(transformed_data, None)
+        # y = torch.tensor([1,2,3,4,5])
+        time_usage_dic["py_compute"] = time.time() - begin
+        logger.info(f"Prediction Results = {y.tolist()[:2]}...")
+
+        logger.info("-----" * 10)
+        overall_end = time.time()
+        time_usage_dic["py_overall_duration"] = overall_end - overall_begin
+        time_usage_dic["py_diff"] = time_usage_dic["py_overall_duration"] - \
+                                    (time_usage_dic["py_conver_to_tensor"] + time_usage_dic["py_compute"])
+
+        logger.info(f"time usage of inference {len(transformed_data)} rows is {time_usage_dic}")
+        del transformed_data
+    except:
+        logger.info(orjson.dumps(
+            {"Errored": traceback.format_exc()}).decode('utf-8'))
+
+    return orjson.dumps({"model_outputs": 1}).decode('utf-8')
 
 
 @exception_catcher

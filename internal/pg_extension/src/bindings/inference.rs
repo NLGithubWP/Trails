@@ -839,12 +839,14 @@ pub fn run_inference_w_all_opt_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-    let mut monitor_log = Vec::new();
+
+    let pid = std::process::id() as i32;
+    let monitor_log = Arc::new(Mutex::new(Vec::new()));
+    let log_clone = Arc::clone(&monitor_log);
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
 
-    let pid = std::process::id() as i32;
     start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
@@ -978,7 +980,8 @@ pub fn run_inference_w_all_opt_workloads(
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
 
-    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log.clone())).unwrap());
+    let monitor_log_rep = monitor_log.lock().unwrap();
+    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
 
     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
@@ -991,296 +994,296 @@ pub fn run_inference_w_all_opt_workloads(
     Ok(())
 }
 
-
-pub fn run_inference_wo_cache_workloads(
-    dataset: &String,
-    condition: &String,
-    config_file: &String,
-    col_cardinalities_file: &String,
-    model_path: &String,
-    sql: &String,
-    batch_size: i32,
-) -> Result<(), String> {
-    let mut monitor_log = Vec::new();
-
-    let overall_start_time = Instant::now();
-    let mut overall_response = HashMap::new();
-
-    let pid = std::process::id() as i32;
-    start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
-
-    let num_columns: i32 = match dataset.as_str() {
-        "frappe" => 12,
-        "adult" => 15,
-        "cvd" => 13,
-        "bank" => 18,
-        "census" => 41 + 2,
-        "credit" => 23 + 2,
-        "diabetes" => 48 + 2,
-        "hcdr" => 69 + 2,
-        "avazu" => 22 + 2,
-        _ => return Err(format!("Unknown dataset: {}", dataset)),
-    };
-
-    // Allocate shared memory once, here is not primary key and id
-    let shmem_size = 4 * batch_size as usize * (num_columns - 2) as usize;
-    let shmem_name = "my_shared_memory";
-    let my_shmem = ShmemConf::new()
-        .size(shmem_size)
-        .os_id(shmem_name)
-        .create()
-        .map_err(|e| e.to_string())?;
-    let shmem_ptr = my_shmem.as_ptr() as *mut i32;
-
-    // log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
-
-    // Execute workloads
-    let mut nquery = 0;
-    let mut response = HashMap::new();
-    while nquery < 1000 {
-
-        pgrx::log!("{}", "started");
-
-        let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
-        response.insert("model_init_time", model_init_time.clone());
-
-        // Step 1: query data
-        let start_time = Instant::now();
-        Spi::connect(|client| {
-            let query = format!(
-                "SELECT * FROM {}_int_train {} LIMIT {}",
-                dataset, sql, batch_size
-            );
-            let mut cursor = client.open_cursor(&query, None);
-            let table = cursor.fetch(batch_size as c_long)
-                .map_err(|e| e.to_string())?;
-
-            let end_time = Instant::now();
-            let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
-            response.insert("data_query_time_spi", data_query_time_spi);
-
-            let start_time_3 = Instant::now();
-            let mut idx = 0;
-            for row in table.into_iter() {
-                for i in 3..=num_columns as usize {
-                    if let Ok(Some(val)) = row.get::<i32>(i) {
-                        unsafe {
-                            std::ptr::write(shmem_ptr.add(idx), val);
-                            idx += 1;
-                        }
-                    }
-                }
-            }
-            let end_time_min3 = Instant::now();
-            let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
-            response.insert("data_type_convert_time", data_query_time_min3.clone());
-
-            Ok::<(), String>(()) // Specify the type explicitly
-        })?;
-        let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("data_query_time", data_query_time.clone());
-
-        let mem_allocate_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("mem_allocate_time", mem_allocate_time.clone());
-
-        // Step 4: model evaluate in Python
-        let start_time = Instant::now();
-        let mut eva_task_map = HashMap::new();
-        eva_task_map.insert("config_file", config_file.clone());
-        eva_task_map.insert("spi_seconds", data_query_time.to_string());
-        eva_task_map.insert("rows", batch_size.to_string());
-
-        eva_task_map.insert("where_cond", condition.clone());
-        eva_task_map.insert("col_cardinalities_file", col_cardinalities_file.clone());
-        eva_task_map.insert("model_path", model_path.clone());
-        let eva_task_json = json!(eva_task_map).to_string();
-
-        run_python_function(
-            &PY_MODULE_INFERENCE,
-            &eva_task_json,
-            "load_model_inference",
-        );
-
-        // Step 4: simulate model evaluate in Python by sleeping
-        // sleep(Duration::from_millis(10));
-
-        let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("python_compute_time", python_compute_time.clone());
-
-        let overall_end_time = Instant::now();
-        let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
-        let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
-        response.insert("diff_time", diff_time.clone());
-
-        nquery += 1;
-        response.clear(); // Clear the response hash map/**/
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
-    }
-
-    // Log memory usage after processing each batch
-    // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
-
-    let _end_time = Instant::now();
-    let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
-    overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
-
-    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log)).unwrap());
-
-    let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
-
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &overall_response_json,
-        "records_results",
-    );
-
-    Ok(())
-}
-
-
-pub fn run_inference_wo_memoryshare_workloads(
-    dataset: &String,
-    condition: &String,
-    config_file: &String,
-    col_cardinalities_file: &String,
-    model_path: &String,
-    sql: &String,
-    batch_size: i32,
-) -> Result<(), String> {
-
-    let mut monitor_log = Vec::new();
-
-    let mut overall_response = HashMap::new();
-    let overall_start_time = Instant::now();
-
-    // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
-
-    let num_columns: i32 = match dataset.as_str() {
-        "frappe" => 12,
-        "adult" => 15,
-        "cvd" => 13,
-        "bank" => 18,
-        "census" => 41 + 2,
-        "credit" => 23 + 2,
-        "diabetes" => 48 + 2,
-        "hcdr" => 69 + 2,
-        "avazu" => 22 + 2,
-        _ => return Err(format!("Unknown dataset: {}", dataset)),
-    };
-
-    // Step 1: load model and columns etc
-    let mut task_map = HashMap::new();
-    task_map.insert("where_cond", condition.clone());
-    task_map.insert("config_file", config_file.clone());
-    task_map.insert("col_cardinalities_file", col_cardinalities_file.clone());
-    task_map.insert("model_path", model_path.clone());
-    let task_json = json!(task_map).to_string();
-
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "model_inference_load_model",
-    );
-
-    // log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
-
-    // Execute workloads
-    let mut nquery = 0;
-    let mut response = HashMap::new();
-    while nquery < 1000 {
-
-        // pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
-
-        let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
-        response.insert("model_init_time", model_init_time.clone());
-
-        // Step 1: query data
-        let start_time = Instant::now();
-        let mut all_rows = Vec::new();
-        Spi::connect(|client| {
-            let query = format!(
-                "SELECT * FROM {}_int_train {} LIMIT {}",
-                dataset, sql, batch_size
-            );
-            let mut cursor = client.open_cursor(&query, None);
-            let table = cursor.fetch(batch_size as c_long)
-                .map_err(|e| e.to_string())?;
-
-            let end_time = Instant::now();
-            let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
-            response.insert("data_query_time_spi", data_query_time_spi);
-
-            let start_time_3 = Instant::now();
-            for row in table.into_iter() {
-                for i in 3..=num_columns as usize {
-                    if let Ok(Some(val)) = row.get::<i32>(i) {
-                        all_rows.push(val);
-                    }
-                }
-            }
-            let end_time_min3 = Instant::now();
-            let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
-            response.insert("data_type_convert_time", data_query_time_min3.clone());
-
-            Ok::<(), String>(()) // Specify the type explicitly
-        })?;
-        let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("data_query_time", data_query_time.clone());
-
-        let mem_allocate_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("mem_allocate_time", mem_allocate_time.clone());
-
-        let serialized_row = serde_json::to_string(&all_rows).unwrap();
-        // Step 4: model evaluate in Python
-        let start_time = Instant::now();
-        let mut eva_task_map = HashMap::new();
-        eva_task_map.insert("config_file", config_file.clone());
-        eva_task_map.insert("mini_batch", serialized_row);
-        eva_task_map.insert("spi_seconds", data_query_time.to_string());
-        let eva_task_json = json!(eva_task_map).to_string();
-
-        run_python_function(
-            &PY_MODULE_INFERENCE,
-            &eva_task_json,
-            "model_inference_compute",
-        );
-
-        // Step 4: simulate model evaluate in Python by sleeping
-        // sleep(Duration::from_millis(10));
-
-        let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("python_compute_time", python_compute_time.clone());
-
-        let overall_end_time = Instant::now();
-        let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
-        let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
-        response.insert("diff_time", diff_time.clone());
-
-        nquery += 1;
-        response.clear(); // Clear the response hash map/**/
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
-    }
-
-    // Log memory usage after processing each batch
-    // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
-
-    let _end_time = Instant::now();
-    let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
-    overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
-
-    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log.clone())).unwrap());
-
-    let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
-
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &overall_response_json,
-        "records_results",
-    );
-
-    Ok(())
-}
+//
+// pub fn run_inference_wo_cache_workloads(
+//     dataset: &String,
+//     condition: &String,
+//     config_file: &String,
+//     col_cardinalities_file: &String,
+//     model_path: &String,
+//     sql: &String,
+//     batch_size: i32,
+// ) -> Result<(), String> {
+//     let mut monitor_log = Vec::new();
+//
+//     let overall_start_time = Instant::now();
+//     let mut overall_response = HashMap::new();
+//
+//     let pid = std::process::id() as i32;
+//     start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
+//
+//     let num_columns: i32 = match dataset.as_str() {
+//         "frappe" => 12,
+//         "adult" => 15,
+//         "cvd" => 13,
+//         "bank" => 18,
+//         "census" => 41 + 2,
+//         "credit" => 23 + 2,
+//         "diabetes" => 48 + 2,
+//         "hcdr" => 69 + 2,
+//         "avazu" => 22 + 2,
+//         _ => return Err(format!("Unknown dataset: {}", dataset)),
+//     };
+//
+//     // Allocate shared memory once, here is not primary key and id
+//     let shmem_size = 4 * batch_size as usize * (num_columns - 2) as usize;
+//     let shmem_name = "my_shared_memory";
+//     let my_shmem = ShmemConf::new()
+//         .size(shmem_size)
+//         .os_id(shmem_name)
+//         .create()
+//         .map_err(|e| e.to_string())?;
+//     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
+//
+//     // log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
+//
+//     // Execute workloads
+//     let mut nquery = 0;
+//     let mut response = HashMap::new();
+//     while nquery < 1000 {
+//
+//         pgrx::log!("{}", "started");
+//
+//         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
+//         response.insert("model_init_time", model_init_time.clone());
+//
+//         // Step 1: query data
+//         let start_time = Instant::now();
+//         Spi::connect(|client| {
+//             let query = format!(
+//                 "SELECT * FROM {}_int_train {} LIMIT {}",
+//                 dataset, sql, batch_size
+//             );
+//             let mut cursor = client.open_cursor(&query, None);
+//             let table = cursor.fetch(batch_size as c_long)
+//                 .map_err(|e| e.to_string())?;
+//
+//             let end_time = Instant::now();
+//             let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
+//             response.insert("data_query_time_spi", data_query_time_spi);
+//
+//             let start_time_3 = Instant::now();
+//             let mut idx = 0;
+//             for row in table.into_iter() {
+//                 for i in 3..=num_columns as usize {
+//                     if let Ok(Some(val)) = row.get::<i32>(i) {
+//                         unsafe {
+//                             std::ptr::write(shmem_ptr.add(idx), val);
+//                             idx += 1;
+//                         }
+//                     }
+//                 }
+//             }
+//             let end_time_min3 = Instant::now();
+//             let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
+//             response.insert("data_type_convert_time", data_query_time_min3.clone());
+//
+//             Ok::<(), String>(()) // Specify the type explicitly
+//         })?;
+//         let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("data_query_time", data_query_time.clone());
+//
+//         let mem_allocate_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("mem_allocate_time", mem_allocate_time.clone());
+//
+//         // Step 4: model evaluate in Python
+//         let start_time = Instant::now();
+//         let mut eva_task_map = HashMap::new();
+//         eva_task_map.insert("config_file", config_file.clone());
+//         eva_task_map.insert("spi_seconds", data_query_time.to_string());
+//         eva_task_map.insert("rows", batch_size.to_string());
+//
+//         eva_task_map.insert("where_cond", condition.clone());
+//         eva_task_map.insert("col_cardinalities_file", col_cardinalities_file.clone());
+//         eva_task_map.insert("model_path", model_path.clone());
+//         let eva_task_json = json!(eva_task_map).to_string();
+//
+//         run_python_function(
+//             &PY_MODULE_INFERENCE,
+//             &eva_task_json,
+//             "load_model_inference",
+//         );
+//
+//         // Step 4: simulate model evaluate in Python by sleeping
+//         // sleep(Duration::from_millis(10));
+//
+//         let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("python_compute_time", python_compute_time.clone());
+//
+//         let overall_end_time = Instant::now();
+//         let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
+//         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
+//         response.insert("diff_time", diff_time.clone());
+//
+//         nquery += 1;
+//         response.clear(); // Clear the response hash map/**/
+//         // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
+//     }
+//
+//     // Log memory usage after processing each batch
+//     // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
+//
+//     let _end_time = Instant::now();
+//     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
+//     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
+//
+//     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log)).unwrap());
+//
+//     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
+//
+//     run_python_function(
+//         &PY_MODULE_INFERENCE,
+//         &overall_response_json,
+//         "records_results",
+//     );
+//
+//     Ok(())
+// }
+//
+//
+// pub fn run_inference_wo_memoryshare_workloads(
+//     dataset: &String,
+//     condition: &String,
+//     config_file: &String,
+//     col_cardinalities_file: &String,
+//     model_path: &String,
+//     sql: &String,
+//     batch_size: i32,
+// ) -> Result<(), String> {
+//
+//     let mut monitor_log = Vec::new();
+//
+//     let mut overall_response = HashMap::new();
+//     let overall_start_time = Instant::now();
+//
+//     // Start memory monitoring in a separate thread
+//     start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
+//
+//     let num_columns: i32 = match dataset.as_str() {
+//         "frappe" => 12,
+//         "adult" => 15,
+//         "cvd" => 13,
+//         "bank" => 18,
+//         "census" => 41 + 2,
+//         "credit" => 23 + 2,
+//         "diabetes" => 48 + 2,
+//         "hcdr" => 69 + 2,
+//         "avazu" => 22 + 2,
+//         _ => return Err(format!("Unknown dataset: {}", dataset)),
+//     };
+//
+//     // Step 1: load model and columns etc
+//     let mut task_map = HashMap::new();
+//     task_map.insert("where_cond", condition.clone());
+//     task_map.insert("config_file", config_file.clone());
+//     task_map.insert("col_cardinalities_file", col_cardinalities_file.clone());
+//     task_map.insert("model_path", model_path.clone());
+//     let task_json = json!(task_map).to_string();
+//
+//     run_python_function(
+//         &PY_MODULE_INFERENCE,
+//         &task_json,
+//         "model_inference_load_model",
+//     );
+//
+//     // log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
+//
+//     // Execute workloads
+//     let mut nquery = 0;
+//     let mut response = HashMap::new();
+//     while nquery < 1000 {
+//
+//         // pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
+//
+//         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
+//         response.insert("model_init_time", model_init_time.clone());
+//
+//         // Step 1: query data
+//         let start_time = Instant::now();
+//         let mut all_rows = Vec::new();
+//         Spi::connect(|client| {
+//             let query = format!(
+//                 "SELECT * FROM {}_int_train {} LIMIT {}",
+//                 dataset, sql, batch_size
+//             );
+//             let mut cursor = client.open_cursor(&query, None);
+//             let table = cursor.fetch(batch_size as c_long)
+//                 .map_err(|e| e.to_string())?;
+//
+//             let end_time = Instant::now();
+//             let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
+//             response.insert("data_query_time_spi", data_query_time_spi);
+//
+//             let start_time_3 = Instant::now();
+//             for row in table.into_iter() {
+//                 for i in 3..=num_columns as usize {
+//                     if let Ok(Some(val)) = row.get::<i32>(i) {
+//                         all_rows.push(val);
+//                     }
+//                 }
+//             }
+//             let end_time_min3 = Instant::now();
+//             let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
+//             response.insert("data_type_convert_time", data_query_time_min3.clone());
+//
+//             Ok::<(), String>(()) // Specify the type explicitly
+//         })?;
+//         let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("data_query_time", data_query_time.clone());
+//
+//         let mem_allocate_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("mem_allocate_time", mem_allocate_time.clone());
+//
+//         let serialized_row = serde_json::to_string(&all_rows).unwrap();
+//         // Step 4: model evaluate in Python
+//         let start_time = Instant::now();
+//         let mut eva_task_map = HashMap::new();
+//         eva_task_map.insert("config_file", config_file.clone());
+//         eva_task_map.insert("mini_batch", serialized_row);
+//         eva_task_map.insert("spi_seconds", data_query_time.to_string());
+//         let eva_task_json = json!(eva_task_map).to_string();
+//
+//         run_python_function(
+//             &PY_MODULE_INFERENCE,
+//             &eva_task_json,
+//             "model_inference_compute",
+//         );
+//
+//         // Step 4: simulate model evaluate in Python by sleeping
+//         // sleep(Duration::from_millis(10));
+//
+//         let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
+//         response.insert("python_compute_time", python_compute_time.clone());
+//
+//         let overall_end_time = Instant::now();
+//         let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
+//         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
+//         response.insert("diff_time", diff_time.clone());
+//
+//         nquery += 1;
+//         response.clear(); // Clear the response hash map/**/
+//         // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
+//     }
+//
+//     // Log memory usage after processing each batch
+//     // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
+//
+//     let _end_time = Instant::now();
+//     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
+//     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
+//
+//     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log.clone())).unwrap());
+//
+//     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
+//
+//     run_python_function(
+//         &PY_MODULE_INFERENCE,
+//         &overall_response_json,
+//         "records_results",
+//     );
+//
+//     Ok(())
+// }
 
 
 // pub fn run_inference_wo_all_opt_workloads(

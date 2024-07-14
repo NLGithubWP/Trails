@@ -895,7 +895,7 @@ pub fn run_inference_w_all_opt_workloads(
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1000 {
-        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, begin", nquery));
+        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, begin", nquery));
 
         let mut response = HashMap::new();
 
@@ -934,13 +934,14 @@ pub fn run_inference_w_all_opt_workloads(
             let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
             response.insert("data_type_convert_time", data_query_time_min3.clone());
 
+            cursor.close()?;
             Ok::<(), String>(()) // Specify the type explicitly
         })?;
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
-        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done query", nquery));
+        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done query", nquery));
 
         let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());
@@ -964,7 +965,7 @@ pub fn run_inference_w_all_opt_workloads(
         // Step 4: simulate model evaluate in Python by sleeping
         sleep(Duration::from_millis(10));
 
-        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done infer", nquery));
+        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done infer", nquery));
 
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();
@@ -982,6 +983,8 @@ pub fn run_inference_w_all_opt_workloads(
         // overall_response.insert(nquery.to_string(), response_json);
 
         nquery += 1;
+
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery));
     }
 
     // Log memory usage after processing each batch

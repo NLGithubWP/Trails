@@ -344,6 +344,20 @@ pub fn run_inference_profiling(
             Err(e) => serde_json::json!({ "error": format!("Error: {}", e) }).to_string(),
         },
 
+        // without memory cache
+        3 => match crate::bindings::inference::run_inference_wo_memoryshare_workloads(
+            &dataset,
+            &condition,
+            &config_file,
+            &col_cardinalities_file,
+            &model_path,
+            &sql,
+            batch_size,
+        ) {
+            Ok(_) => serde_json::json!("ok").to_string(),
+            Err(e) => serde_json::json!({ "error": format!("Error: {}", e) }).to_string(),
+        },
+
         _ => serde_json::json!({ "error": "Invalid function number" }).to_string(),
     }
 }

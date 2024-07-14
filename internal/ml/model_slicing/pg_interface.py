@@ -235,8 +235,8 @@ def model_inference_compute(params: dict, args: Namespace):
         # if mini_batch["status"] != 'success':
         #     raise Exception
 
-        # todo: for credit datasets, it has 23 fields
-        mini_batch_used = [mini_batch[i:i + 23] for i in range(0, len(mini_batch), 23)]
+        # todo: for avazu datasets, it has 22 fields
+        mini_batch_used = [mini_batch[i:i + 22] for i in range(0, len(mini_batch), 22)]
 
         begin = time.time()
         # pre-processing mini_batch

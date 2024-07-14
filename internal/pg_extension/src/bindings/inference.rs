@@ -1190,6 +1190,9 @@ pub fn run_inference_wo_memoryshare_workloads(
     let mut nquery = 0;
     let mut response = HashMap::new();
     while nquery < 1000 {
+
+        pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
+
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
         response.insert("model_init_time", model_init_time.clone());
 
@@ -1213,7 +1216,7 @@ pub fn run_inference_wo_memoryshare_workloads(
             for row in table.into_iter() {
                 for i in 3..=num_columns as usize {
                     if let Ok(Some(val)) = row.get::<i32>(i) {
-                       all_rows.push(val);
+                        all_rows.push(val);
                     }
                 }
             }

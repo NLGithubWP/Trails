@@ -839,14 +839,16 @@ pub fn run_inference_w_all_opt_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-    let memory_log = Arc::new(Mutex::new(Vec::new()));
-    let monitor_log = Arc::clone(&memory_log);
+    let mut memory_log = Vec::new();
+    let overall_start_time = Instant::now();
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
 
     // Start memory monitoring in a separate thread
     // start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
+
+    log_memory_usage(&mut memory_log, overall_start_time, "before all batch");
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -887,11 +889,14 @@ pub fn run_inference_w_all_opt_workloads(
         "model_inference_load_model",
     );
 
-    log_memory_usage(&memory_log, overall_start_time, "Before all batch");
+    log_memory_usage(&mut memory_log, overall_start_time, "load model done");
 
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1000 {
+
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, begin", nquery));
+
         let mut response = HashMap::new();
 
         let _end_time = Instant::now();
@@ -935,6 +940,8 @@ pub fn run_inference_w_all_opt_workloads(
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done query", nquery));
+
         let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());
 
@@ -957,6 +964,8 @@ pub fn run_inference_w_all_opt_workloads(
         // Step 4: simulate model evaluate in Python by sleeping
         sleep(Duration::from_millis(10));
 
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done infer", nquery));
+
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("python_compute_time", python_compute_time.clone());
@@ -976,7 +985,7 @@ pub fn run_inference_w_all_opt_workloads(
     }
 
     // Log memory usage after processing each batch
-    log_memory_usage(&memory_log, overall_start_time, "After all batch");
+    log_memory_usage(&mut memory_log, overall_start_time, "all batch done");
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
@@ -992,6 +1001,8 @@ pub fn run_inference_w_all_opt_workloads(
         &overall_response_json,
         "records_results",
     );
+
+    log_memory_usage(&mut memory_log, overall_start_time, "return results");
 
     Ok(())
 }

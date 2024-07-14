@@ -22,7 +22,7 @@ pub fn start_memory_monitoring(interval: Duration, memory_log: Arc<Mutex<Vec<(St
 }
 
 
-fn log_memory_usage(memory_log: &Arc<Mutex<Vec<(String, f64, u64)>>>, start_time: Instant, label: &str) {
+pub fn log_memory_usage(memory_log: &Arc<Mutex<Vec<(String, f64, u64)>>>, start_time: Instant, label: &str) {
     let pid = std::process::id() as i32;
     let mut system = System::new_all();
     system.refresh_all();

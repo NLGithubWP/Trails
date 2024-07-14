@@ -1199,60 +1199,41 @@ CUDA_VISIBLE_DEVICES=-1 python ./internal/ml/model_slicing/baseline_int.py /hdd1
 ### Memory, Response Time
 
 ```sql
-
-# 1. with all opt
+# 1. with all opts
 SELECT run_inference_profiling(
-	  1,
+  1,
     'avazu', 
     '{}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
     '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
     '/project/tensor_log/avazu/dnn_K16',
     '', 
-    500
-); 
+    10000
+);
 
 # 2. w/o cache
-SELECT model_init(
-	  2,
+SELECT run_inference_profiling(
+  2,
     'avazu', 
     '{}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
     '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
     '/project/tensor_log/avazu/dnn_K16',
     '', 
-    100000
-); 
-
+    10000
+);
 
 # 3. w/o memory share
-SELECT model_init(
-	  3,
+SELECT run_inference_profiling(
+  3,
     'avazu', 
     '{}', 
     '/project/Trails/internal/ml/model_selection/config.ini', 
     '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
     '/project/tensor_log/avazu/dnn_K16',
     '', 
-    100000
-); 
-
-
-# 4. w/o all opt
-SELECT model_init(
-	  4,
-    'avazu', 
-    '{}', 
-    '/project/Trails/internal/ml/model_selection/config.ini', 
-    '/project/Trails/internal/ml/model_slicing/data/avazu_padding.json', 
-    '/project/tensor_log/avazu/dnn_K16',
-    '', 
-    100000
-); 
-
-
-
-
+    10000
+);
 ```
 
 

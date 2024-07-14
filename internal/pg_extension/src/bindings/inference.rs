@@ -894,7 +894,6 @@ pub fn run_inference_w_all_opt_workloads(
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1000 {
-
         log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, begin", nquery));
 
         let mut response = HashMap::new();
@@ -991,8 +990,7 @@ pub fn run_inference_w_all_opt_workloads(
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
 
-    let end_memory_log = memory_log.lock().map_err(|e| e.to_string())?;
-    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(end_memory_log.clone())).unwrap());
+    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(memory_log.clone())).unwrap());
 
     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
@@ -1001,8 +999,6 @@ pub fn run_inference_w_all_opt_workloads(
         &overall_response_json,
         "records_results",
     );
-
-    log_memory_usage(&mut memory_log, overall_start_time, "return results");
 
     Ok(())
 }

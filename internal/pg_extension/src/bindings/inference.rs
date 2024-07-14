@@ -884,11 +884,11 @@ pub fn run_inference_w_all_opt_workloads(
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
     // Here it cache a state once
-    // run_python_function(
-    //     &PY_MODULE_INFERENCE,
-    //     &task_json,
-    //     "model_inference_load_model",
-    // );
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "model_inference_load_model",
+    );
 
     log_memory_usage(&mut memory_log, overall_start_time, "load model done");
 
@@ -897,8 +897,7 @@ pub fn run_inference_w_all_opt_workloads(
     while nquery < 1000 {
         let mut response = HashMap::new();
 
-        let _end_time = Instant::now();
-        let model_init_time = _end_time.duration_since(overall_start_time).as_secs_f64();
+        let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
         response.insert("model_init_time", model_init_time.clone());
 
         // Step 1: query data
@@ -934,11 +933,10 @@ pub fn run_inference_w_all_opt_workloads(
         //
         //     Ok::<(), String>(()) // Specify the type explicitly
         // })?;
-        let end_time = Instant::now();
-        let data_query_time = end_time.duration_since(start_time).as_secs_f64();
+        let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
-        let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
+        let mem_allocate_time =  Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());
 
         // Step 4: model evaluate in Python
@@ -960,8 +958,7 @@ pub fn run_inference_w_all_opt_workloads(
 
         // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done infer", nquery));
 
-        let end_time = Instant::now();
-        let python_compute_time = end_time.duration_since(start_time).as_secs_f64();
+        let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("python_compute_time", python_compute_time.clone());
 
         let overall_end_time = Instant::now();

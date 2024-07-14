@@ -899,7 +899,7 @@ pub fn run_inference_w_all_opt_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 100 {
+    while nquery < 1000 {
 
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
         response.insert("model_init_time", model_init_time.clone());

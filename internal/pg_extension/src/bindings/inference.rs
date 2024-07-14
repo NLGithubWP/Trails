@@ -1010,7 +1010,9 @@ pub fn run_inference_wo_cache_workloads(
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function
-    start_memory_monitoring(Duration::from_secs(1), Arc::clone(&monitor_log), overall_start_time);
+    // start_memory_monitoring(Duration::from_secs(1), Arc::clone(&monitor_log), overall_start_time);
+
+    start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -1040,7 +1042,7 @@ pub fn run_inference_wo_cache_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 100 {
+    while nquery < 300 {
 
         pgrx::log!("{}", "started");
 

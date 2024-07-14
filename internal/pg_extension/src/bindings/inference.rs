@@ -895,8 +895,6 @@ pub fn run_inference_w_all_opt_workloads(
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1000 {
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, begin", nquery));
-
         let mut response = HashMap::new();
 
         let _end_time = Instant::now();
@@ -940,19 +938,15 @@ pub fn run_inference_w_all_opt_workloads(
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done query", nquery));
-
         let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());
 
-        let start_time = Instant::now();
-
         // Step 4: model evaluate in Python
+        let start_time = Instant::now();
         let mut eva_task_map = HashMap::new();
         eva_task_map.insert("config_file", config_file.clone());
         eva_task_map.insert("spi_seconds", data_query_time.to_string());
         eva_task_map.insert("rows", batch_size.to_string());
-
         let eva_task_json = json!(eva_task_map).to_string();
 
         // run_python_function(
@@ -982,7 +976,6 @@ pub fn run_inference_w_all_opt_workloads(
         // overall_response.insert(nquery.to_string(), response_json);
 
         nquery += 1;
-
 
         response.clear(); // Clear the response hash map/**/
 

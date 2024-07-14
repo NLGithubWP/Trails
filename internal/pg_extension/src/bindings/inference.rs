@@ -847,7 +847,7 @@ pub fn run_inference_w_all_opt_workloads(
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
 
-    start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
+    start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,

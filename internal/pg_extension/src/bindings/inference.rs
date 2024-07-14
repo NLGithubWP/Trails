@@ -840,14 +840,16 @@ pub fn run_inference_w_all_opt_workloads(
     batch_size: i32,
 ) -> Result<(), String> {
 
-    let pid = std::process::id() as i32;
-    let monitor_log = Arc::new(Mutex::new(Vec::new()));
-    let log_clone = Arc::clone(&monitor_log);
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
 
-    start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, overall_start_time);
+
+    let monitor_log = Arc::new(Mutex::new(Vec::new()));
+    let overall_start_time = Instant::now();
+
+    // Pass the Arc directly to the function
+    start_memory_monitoring(Duration::from_secs(1), Arc::clone(&monitor_log), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,

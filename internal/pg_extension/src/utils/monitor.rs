@@ -5,7 +5,7 @@ use sysinfo::{System, SystemExt, ProcessExt};
 
 
 pub fn start_memory_monitoring(interval: Duration,
-                               memory_log: &mut Arc<Mutex<Vec<(f64, u64)>>>,
+                               memory_log: Arc<Mutex<Vec<(f64, u64)>>>,
                                start_time: Instant) {
     let pid = std::process::id() as i32;
     let mut system = System::new_all();

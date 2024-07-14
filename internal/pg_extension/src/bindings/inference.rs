@@ -842,8 +842,10 @@ pub fn run_inference_w_all_opt_workloads(
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
+    let start_time = Instant::now();
+
     // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log);
+    start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -879,18 +881,12 @@ pub fn run_inference_w_all_opt_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    // Log memory usage after shared memory allocation
-    log_memory_usage("After shared memory allocation", &memory_log);
-
     // Here it cache a state once
     run_python_function(
         &PY_MODULE_INFERENCE,
         &task_json,
         "model_inference_load_model",
     );
-
-    // Log memory usage after loading the model
-    log_memory_usage("After loading the model", &memory_log);
 
     // Execute workloads
     let mut nquery = 0;
@@ -916,9 +912,6 @@ pub fn run_inference_w_all_opt_workloads(
             let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
             response.insert("data_query_time_spi", data_query_time_spi);
 
-            // Log memory usage after fetching data
-            log_memory_usage("After fetching data", &memory_log);
-
             let start_time_3 = Instant::now();
             let mut idx = 0;
             for row in table.into_iter() {
@@ -940,9 +933,6 @@ pub fn run_inference_w_all_opt_workloads(
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
-
-        // Log memory usage after processing each batch
-        log_memory_usage("After processing batch", &memory_log);
 
         let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());
@@ -974,6 +964,9 @@ pub fn run_inference_w_all_opt_workloads(
         let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
         response.insert("diff_time", diff_time.clone());
+
+        // Log memory usage after processing each batch
+        log_memory_usage(&memory_log, start_time, &format!("After batch {}", nquery));
 
         // let response_json = json!(response).to_string();
         // overall_response.insert(nquery.to_string(), response_json);

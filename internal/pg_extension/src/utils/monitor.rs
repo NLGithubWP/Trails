@@ -21,8 +21,8 @@ use sysinfo::{System, SystemExt, ProcessExt};
 // }
 
 
-pub fn log_memory_usage(memory_log: &mut Vec<(String, f64, u64)>, start_time: Instant, label: &str) {
-    let pid = std::process::id() as i32;
+pub fn log_memory_usage(memory_log: &mut Vec<(String, f64, u64)>,
+                        start_time: Instant, label: &str, pid: i32) {
     let mut system = System::new_all();
     system.refresh_all();
     if let Some(process) = system.process(pid) {

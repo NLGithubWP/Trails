@@ -848,8 +848,8 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Start memory monitoring in a separate thread
     // start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
-
-    log_memory_usage(&mut memory_log, overall_start_time, "before all batch");
+    let pid = std::process::id() as i32;
+    log_memory_usage(&mut memory_log, overall_start_time, "before all batch", pid);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -894,7 +894,7 @@ pub fn run_inference_w_all_opt_workloads(
         "model_inference_load_model",
     );
 
-    log_memory_usage(&mut memory_log, overall_start_time, "load model done");
+    log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
 
     // Execute workloads
     let mut nquery = 0;
@@ -969,11 +969,11 @@ pub fn run_inference_w_all_opt_workloads(
 
         nquery += 1;
         response.clear(); // Clear the response hash map/**/
-        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery));
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
     }
 
     // Log memory usage after processing each batch
-    log_memory_usage(&mut memory_log, overall_start_time, "all batch done");
+    log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();
@@ -1007,8 +1007,9 @@ pub fn run_inference_wo_cache_workloads(
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
+    let pid = std::process::id() as i32;
 
-    log_memory_usage(&mut memory_log, overall_start_time, "before all batch");
+    log_memory_usage(&mut memory_log, overall_start_time, "before all batch", pid);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -1033,7 +1034,7 @@ pub fn run_inference_wo_cache_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    log_memory_usage(&mut memory_log, overall_start_time, "load model done");
+    log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
 
     // Execute workloads
     let mut nquery = 0;
@@ -1112,11 +1113,11 @@ pub fn run_inference_wo_cache_workloads(
 
         nquery += 1;
         response.clear(); // Clear the response hash map/**/
-        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery));
+        log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
     }
 
     // Log memory usage after processing each batch
-    log_memory_usage(&mut memory_log, overall_start_time, "all batch done");
+    log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();

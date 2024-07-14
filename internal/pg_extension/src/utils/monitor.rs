@@ -12,6 +12,7 @@ pub fn start_memory_monitoring(interval: Duration,
 
     let label = label.to_string(); // Move label into the closure
     let start_time = start_time; // Move start_time into the closure
+    let mut memory_log = memory_log.clone(); // Clone the memory_log to move it into the closure
 
     thread::spawn(move || {
         loop {

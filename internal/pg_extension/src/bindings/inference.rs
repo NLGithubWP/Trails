@@ -954,7 +954,7 @@ pub fn run_inference_w_all_opt_workloads(
         // );
 
         // Step 4: simulate model evaluate in Python by sleeping
-        sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(200));
 
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();

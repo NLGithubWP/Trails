@@ -1043,7 +1043,7 @@ pub fn run_inference_wo_cache_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 1000 {
+    while nquery < 10000 {
 
         pgrx::log!("{}", "started");
 

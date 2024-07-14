@@ -13,7 +13,7 @@ pub fn start_memory_monitoring(interval: Duration, memory_log: Arc<Mutex<Vec<(St
             if let Some(process) = system.process(pid) {
                 let memory_usage = process.memory();
                 let timestamp = start_time.elapsed().as_secs_f64(); // Use the same Instant to get elapsed time
-                memory_log.push((label.clone(), timestamp, memory_usage)); // Append directly to the vector
+                memory_log.push((label.to_string(), timestamp, memory_usage)); // Append directly to the vector
             }
             thread::sleep(interval);
         }

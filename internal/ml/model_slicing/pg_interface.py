@@ -104,6 +104,19 @@ def load_model(tensorboard_path: str, device: str = "cuda"):
 
 
 @exception_catcher
+def init_log(params: dict, args: Namespace):
+    global model, sliced_model, col_cardinalities
+    from model_selection.src.logger import logger
+    try:
+        logger.info("Init log done")
+    except:
+        logger.info(orjson.dumps(
+            {"Errored": traceback.format_exc()}).decode('utf-8'))
+    return orjson.dumps({"ok": 1}).decode('utf-8')
+
+
+
+@exception_catcher
 def model_inference_load_model(params: dict, args: Namespace):
     global model, sliced_model, col_cardinalities
     from model_selection.src.logger import logger

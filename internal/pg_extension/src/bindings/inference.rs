@@ -945,14 +945,14 @@ pub fn run_inference_w_all_opt_workloads(
 
         let eva_task_json = json!(eva_task_map).to_string();
 
-        run_python_function(
-            &PY_MODULE_INFERENCE,
-            &eva_task_json,
-            "model_inference_compute_shared_memory_write_once_int",
-        );
+        // run_python_function(
+        //     &PY_MODULE_INFERENCE,
+        //     &eva_task_json,
+        //     "model_inference_compute_shared_memory_write_once_int",
+        // );
 
         // Step 4: simulate model evaluate in Python by sleeping
-        // sleep(Duration::from_millis(100));
+        sleep(Duration::from_millis(100));
 
         let end_time = Instant::now();
         let python_compute_time = end_time.duration_since(start_time).as_secs_f64();

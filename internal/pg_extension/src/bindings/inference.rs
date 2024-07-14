@@ -8,7 +8,7 @@ use crate::utils::monitor::start_memory_monitoring;
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-use std::thread::sleep;
+// use std::thread::sleep;
 
 pub fn run_inference_shared_memory(
     dataset: &String,
@@ -842,8 +842,6 @@ pub fn run_inference_w_all_opt_workloads(
 
 
     let mut overall_response = HashMap::new();
-    let overall_start_time = Instant::now();
-
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
     let overall_start_time = Instant::now();
@@ -1006,7 +1004,6 @@ pub fn run_inference_wo_cache_workloads(
     batch_size: i32,
 ) -> Result<(), String> {
 
-    let overall_start_time = Instant::now();
     let mut overall_response = HashMap::new();
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
@@ -1157,7 +1154,6 @@ pub fn run_inference_wo_memoryshare_workloads(
 ) -> Result<(), String> {
 
 
-    let overall_start_time = Instant::now();
     let mut overall_response = HashMap::new();
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));

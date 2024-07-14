@@ -4,7 +4,7 @@ use std::ffi::c_long;
 use pgrx::prelude::*;
 use crate::bindings::ml_register::PY_MODULE_INFERENCE;
 use crate::bindings::ml_register::run_python_function;
-use crate::utils::monitor::start_memory_monitoring;
+use crate::utils::monitor::{start_memory_monitoring, log_memory_usage};
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -879,12 +879,18 @@ pub fn run_inference_w_all_opt_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
+    // Log memory usage after shared memory allocation
+    log_memory_usage("After shared memory allocation", &memory_log);
+
     // Here it cache a state once
     run_python_function(
         &PY_MODULE_INFERENCE,
         &task_json,
         "model_inference_load_model",
     );
+
+    // Log memory usage after loading the model
+    log_memory_usage("After loading the model", &memory_log);
 
     // Execute workloads
     let mut nquery = 0;
@@ -910,6 +916,9 @@ pub fn run_inference_w_all_opt_workloads(
             let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
             response.insert("data_query_time_spi", data_query_time_spi);
 
+            // Log memory usage after fetching data
+            log_memory_usage("After fetching data", &memory_log);
+
             let start_time_3 = Instant::now();
             let mut idx = 0;
             for row in table.into_iter() {
@@ -931,6 +940,9 @@ pub fn run_inference_w_all_opt_workloads(
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
+
+        // Log memory usage after processing each batch
+        log_memory_usage("After processing batch", &memory_log);
 
         let mem_allocate_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("mem_allocate_time", mem_allocate_time.clone());

@@ -899,7 +899,7 @@ pub fn run_inference_w_all_opt_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 1000 {
+    while nquery < 500 {
 
         pgrx::log!("{}", "started");
 
@@ -1043,7 +1043,7 @@ pub fn run_inference_wo_cache_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 1000 {
+    while nquery < 500 {
 
         pgrx::log!("{}", "started");
 
@@ -1199,7 +1199,7 @@ pub fn run_inference_wo_memoryshare_workloads(
     // Execute workloads
     let mut nquery = 0;
     let mut response = HashMap::new();
-    while nquery < 1000 {
+    while nquery < 500 {
 
         // pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
 

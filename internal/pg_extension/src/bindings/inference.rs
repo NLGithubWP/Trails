@@ -934,7 +934,8 @@ pub fn run_inference_w_all_opt_workloads(
             let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
             response.insert("data_type_convert_time", data_query_time_min3.clone());
 
-            cursor.close()?;
+            table.clear();
+
             Ok::<(), String>(()) // Specify the type explicitly
         })?;
         let end_time = Instant::now();
@@ -983,6 +984,9 @@ pub fn run_inference_w_all_opt_workloads(
         // overall_response.insert(nquery.to_string(), response_json);
 
         nquery += 1;
+
+
+        response.clear(); // Clear the response hash map/**/
 
         log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery));
     }

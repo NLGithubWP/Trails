@@ -887,6 +887,8 @@ pub fn run_inference_w_all_opt_workloads(
         "model_inference_load_model",
     );
 
+    log_memory_usage(&memory_log, overall_start_time, "Before all batch");
+
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1000 {
@@ -965,13 +967,16 @@ pub fn run_inference_w_all_opt_workloads(
         response.insert("diff_time", diff_time.clone());
 
         // Log memory usage after processing each batch
-        log_memory_usage(&memory_log, overall_start_time, &format!("After batch {}", nquery));
+        // log_memory_usage(&memory_log, overall_start_time, &format!("After batch {}", nquery));
 
         // let response_json = json!(response).to_string();
         // overall_response.insert(nquery.to_string(), response_json);
 
         nquery += 1;
     }
+
+    // Log memory usage after processing each batch
+    log_memory_usage(&memory_log, overall_start_time, "After all batch");
 
     let _end_time = Instant::now();
     let overall_time_usage = _end_time.duration_since(overall_start_time).as_secs_f64();

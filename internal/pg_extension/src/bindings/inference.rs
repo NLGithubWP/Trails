@@ -903,37 +903,37 @@ pub fn run_inference_w_all_opt_workloads(
 
         // Step 1: query data
         let start_time = Instant::now();
-        Spi::connect(|client| {
-            let query = format!(
-                "SELECT * FROM {}_int_train {} LIMIT {}",
-                dataset, sql, batch_size
-            );
-            let mut cursor = client.open_cursor(&query, None);
-            let table = cursor.fetch(batch_size as c_long)
-                .map_err(|e| e.to_string())?;
-
-            let end_time = Instant::now();
-            let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
-            response.insert("data_query_time_spi", data_query_time_spi);
-
-            let start_time_3 = Instant::now();
-            let mut idx = 0;
-            for row in table.into_iter() {
-                for i in 3..=num_columns as usize {
-                    if let Ok(Some(val)) = row.get::<i32>(i) {
-                        unsafe {
-                            std::ptr::write(shmem_ptr.add(idx), val);
-                            idx += 1;
-                        }
-                    }
-                }
-            }
-            let end_time_min3 = Instant::now();
-            let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
-            response.insert("data_type_convert_time", data_query_time_min3.clone());
-
-            Ok::<(), String>(()) // Specify the type explicitly
-        })?;
+        // Spi::connect(|client| {
+        //     let query = format!(
+        //         "SELECT * FROM {}_int_train {} LIMIT {}",
+        //         dataset, sql, batch_size
+        //     );
+        //     let mut cursor = client.open_cursor(&query, None);
+        //     let table = cursor.fetch(batch_size as c_long)
+        //         .map_err(|e| e.to_string())?;
+        //
+        //     let end_time = Instant::now();
+        //     let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
+        //     response.insert("data_query_time_spi", data_query_time_spi);
+        //
+        //     let start_time_3 = Instant::now();
+        //     let mut idx = 0;
+        //     for row in table.into_iter() {
+        //         for i in 3..=num_columns as usize {
+        //             if let Ok(Some(val)) = row.get::<i32>(i) {
+        //                 unsafe {
+        //                     std::ptr::write(shmem_ptr.add(idx), val);
+        //                     idx += 1;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     let end_time_min3 = Instant::now();
+        //     let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
+        //     response.insert("data_type_convert_time", data_query_time_min3.clone());
+        //
+        //     Ok::<(), String>(()) // Specify the type explicitly
+        // })?;
         let end_time = Instant::now();
         let data_query_time = end_time.duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());

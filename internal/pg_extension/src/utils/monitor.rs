@@ -12,7 +12,7 @@ pub fn start_memory_monitoring(interval: Duration,
 
     thread::spawn(move || {
         loop {
-            system.refresh_memory();
+            system.refresh_all();
             if let Some(process) = system.process(pid) {
                 let memory_usage = process.memory();
                 let timestamp = start_time.elapsed().as_secs_f64();

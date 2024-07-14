@@ -3,7 +3,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 use sysinfo::{System, SystemExt, ProcessExt};
 
-pub fn start_memory_monitoring(interval: Duration, memory_log: Arc<Mutex<Vec<(String, f64, u64)>>>, label: String, start_time: Instant) {
+pub fn start_memory_monitoring(interval: Duration, memory_log: &mut Vec<(String, f64, u64)>, label: &str, start_time: Instant) {
     let pid = std::process::id() as i32;
     let mut system = System::new_all();
 

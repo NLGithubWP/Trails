@@ -848,7 +848,11 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Start memory monitoring in a separate thread
     // start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
-
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "init_log",
+    );
     log_memory_usage(&mut memory_log, overall_start_time, "before all batch");
 
     let num_columns: i32 = match dataset.as_str() {
@@ -889,13 +893,6 @@ pub fn run_inference_w_all_opt_workloads(
     //     &task_json,
     //     "model_inference_load_model",
     // );
-
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "init_log",
-    );
-
     log_memory_usage(&mut memory_log, overall_start_time, "load model done");
 
     // Execute workloads

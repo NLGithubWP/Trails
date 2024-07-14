@@ -353,8 +353,7 @@ def model_inference_compute_shared_memory_write_once_int(params: dict, args: Nam
     return orjson.dumps({"model_outputs": 1}).decode('utf-8')
 
 
-@exception_catcher
-def records_results(params: str, args: Namespace):
+def records_results(params: str):
     global time_usage_dic
     from model_selection.src.logger import logger
     try:

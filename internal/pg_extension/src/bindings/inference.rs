@@ -848,11 +848,7 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Start memory monitoring in a separate thread
     // start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "init_log",
-    );
+
     log_memory_usage(&mut memory_log, overall_start_time, "before all batch");
 
     let num_columns: i32 = match dataset.as_str() {
@@ -887,6 +883,11 @@ pub fn run_inference_w_all_opt_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "init_log",
+    );
     // Here it cache a state once
     // run_python_function(
     //     &PY_MODULE_INFERENCE,

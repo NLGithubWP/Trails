@@ -884,11 +884,11 @@ pub fn run_inference_w_all_opt_workloads(
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
     // Here it cache a state once
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "model_inference_load_model",
-    );
+    // run_python_function(
+    //     &PY_MODULE_INFERENCE,
+    //     &task_json,
+    //     "model_inference_load_model",
+    // );
 
     log_memory_usage(&mut memory_log, overall_start_time, "load model done");
 

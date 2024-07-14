@@ -864,7 +864,6 @@ pub fn run_inference_w_all_opt_workloads(
         _ => return Err(format!("Unknown dataset: {}", dataset)),
     };
 
-
     // Step 1: load model and columns etc
     let mut task_map = HashMap::new();
     task_map.insert("where_cond", condition.clone());
@@ -883,17 +882,18 @@ pub fn run_inference_w_all_opt_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "init_log",
-    );
-    // Here it cache a state once
     // run_python_function(
     //     &PY_MODULE_INFERENCE,
     //     &task_json,
-    //     "model_inference_load_model",
+    //     "init_log",
     // );
+    // Here it cache a state once
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "model_inference_load_model",
+    );
+
     log_memory_usage(&mut memory_log, overall_start_time, "load model done");
 
     // Execute workloads
@@ -906,37 +906,37 @@ pub fn run_inference_w_all_opt_workloads(
 
         // Step 1: query data
         let start_time = Instant::now();
-        // Spi::connect(|client| {
-        //     let query = format!(
-        //         "SELECT * FROM {}_int_train {} LIMIT {}",
-        //         dataset, sql, batch_size
-        //     );
-        //     let mut cursor = client.open_cursor(&query, None);
-        //     let table = cursor.fetch(batch_size as c_long)
-        //         .map_err(|e| e.to_string())?;
-        //
-        //     let end_time = Instant::now();
-        //     let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
-        //     response.insert("data_query_time_spi", data_query_time_spi);
-        //
-        //     let start_time_3 = Instant::now();
-        //     let mut idx = 0;
-        //     for row in table.into_iter() {
-        //         for i in 3..=num_columns as usize {
-        //             if let Ok(Some(val)) = row.get::<i32>(i) {
-        //                 unsafe {
-        //                     std::ptr::write(shmem_ptr.add(idx), val);
-        //                     idx += 1;
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     let end_time_min3 = Instant::now();
-        //     let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
-        //     response.insert("data_type_convert_time", data_query_time_min3.clone());
-        //
-        //     Ok::<(), String>(()) // Specify the type explicitly
-        // })?;
+        Spi::connect(|client| {
+            let query = format!(
+                "SELECT * FROM {}_int_train {} LIMIT {}",
+                dataset, sql, batch_size
+            );
+            let mut cursor = client.open_cursor(&query, None);
+            let table = cursor.fetch(batch_size as c_long)
+                .map_err(|e| e.to_string())?;
+
+            let end_time = Instant::now();
+            let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
+            response.insert("data_query_time_spi", data_query_time_spi);
+
+            let start_time_3 = Instant::now();
+            let mut idx = 0;
+            for row in table.into_iter() {
+                for i in 3..=num_columns as usize {
+                    if let Ok(Some(val)) = row.get::<i32>(i) {
+                        unsafe {
+                            std::ptr::write(shmem_ptr.add(idx), val);
+                            idx += 1;
+                        }
+                    }
+                }
+            }
+            let end_time_min3 = Instant::now();
+            let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
+            response.insert("data_type_convert_time", data_query_time_min3.clone());
+
+            Ok::<(), String>(()) // Specify the type explicitly
+        })?;
         let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("data_query_time", data_query_time.clone());
 
@@ -951,16 +951,14 @@ pub fn run_inference_w_all_opt_workloads(
         eva_task_map.insert("rows", batch_size.to_string());
         let eva_task_json = json!(eva_task_map).to_string();
 
-        // run_python_function(
-        //     &PY_MODULE_INFERENCE,
-        //     &eva_task_json,
-        //     "model_inference_compute_shared_memory_write_once_int",
-        // );
+        run_python_function(
+            &PY_MODULE_INFERENCE,
+            &eva_task_json,
+            "model_inference_compute_shared_memory_write_once_int",
+        );
 
         // Step 4: simulate model evaluate in Python by sleeping
-        sleep(Duration::from_millis(10));
-
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {}, done infer", nquery));
+        // sleep(Duration::from_millis(10));
 
         let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("python_compute_time", python_compute_time.clone());
@@ -970,16 +968,8 @@ pub fn run_inference_w_all_opt_workloads(
         let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
         response.insert("diff_time", diff_time.clone());
 
-        // Log memory usage after processing each batch
-        // log_memory_usage(&memory_log, overall_start_time, &format!("After batch {}", nquery));
-
-        // let response_json = json!(response).to_string();
-        // overall_response.insert(nquery.to_string(), response_json);
-
         nquery += 1;
-
         response.clear(); // Clear the response hash map/**/
-
         log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery));
     }
 

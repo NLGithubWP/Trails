@@ -842,10 +842,11 @@ pub fn run_inference_w_all_opt_workloads(
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
-    let start_time = Instant::now();
+    let mut overall_response = HashMap::new();
+    let overall_start_time = Instant::now();
 
     // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), start_time);
+    start_memory_monitoring(Duration::from_secs(1), monitor_log, "Monitoring".to_string(), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -860,8 +861,6 @@ pub fn run_inference_w_all_opt_workloads(
         _ => return Err(format!("Unknown dataset: {}", dataset)),
     };
 
-    let mut overall_response = HashMap::new();
-    let overall_start_time = Instant::now();
 
     // Step 1: load model and columns etc
     let mut task_map = HashMap::new();
@@ -966,7 +965,7 @@ pub fn run_inference_w_all_opt_workloads(
         response.insert("diff_time", diff_time.clone());
 
         // Log memory usage after processing each batch
-        log_memory_usage(&memory_log, start_time, &format!("After batch {}", nquery));
+        log_memory_usage(&memory_log, overall_start_time, &format!("After batch {}", nquery));
 
         // let response_json = json!(response).to_string();
         // overall_response.insert(nquery.to_string(), response_json);

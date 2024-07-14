@@ -1005,9 +1005,6 @@ pub fn run_inference_wo_cache_workloads(
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
-    // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log);
-
     let mut num_columns: i32 = 0;
     match dataset.as_str() {  // assuming dataset is a String
         "frappe" => num_columns = 12,
@@ -1163,10 +1160,6 @@ pub fn run_inference_wo_memoryshare_workloads(
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
 
-    // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log);
-
-
     let mut num_columns: i32 = 0;
     match dataset.as_str() {  // assuming dataset is a String
         "frappe" => num_columns = 12,
@@ -1321,10 +1314,6 @@ pub fn run_inference_wo_all_opt_workloads(
 ) -> serde_json::Value {
     let memory_log = Arc::new(Mutex::new(Vec::new()));
     let monitor_log = Arc::clone(&memory_log);
-
-    // Start memory monitoring in a separate thread
-    start_memory_monitoring(Duration::from_secs(1), monitor_log);
-
 
     let mut num_columns: i32 = 0;
     match dataset.as_str() {  // assuming dataset is a String

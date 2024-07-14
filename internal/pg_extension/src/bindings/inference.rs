@@ -1191,7 +1191,7 @@ pub fn run_inference_wo_memoryshare_workloads(
     let mut response = HashMap::new();
     while nquery < 1000 {
 
-        pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
+        // pgx::elog!(pgx::PgLogLevel::NOTICE, &format!("batch {} done", nquery));
 
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
         response.insert("model_init_time", model_init_time.clone());

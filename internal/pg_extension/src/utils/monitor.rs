@@ -30,7 +30,7 @@ pub fn start_memory_monitoring(interval: Duration,
 
 pub fn log_memory_usage(memory_log: &mut Vec<(String, f64, u64)>,
                         start_time: Instant, label: &str, pid: i32) {
-
+    let mut system = System::new_all();
     system.refresh_memory();
     if let Some(process) = system.process(pid) {
         let memory_usage = process.memory();

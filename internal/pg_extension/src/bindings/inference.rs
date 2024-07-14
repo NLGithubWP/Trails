@@ -839,8 +839,7 @@ pub fn run_inference_w_all_opt_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-    let mut memory_log = Vec::new();
-    let overall_start_time = Instant::now();
+    let mut monitor_log = Vec::new();
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
@@ -999,11 +998,11 @@ pub fn run_inference_wo_cache_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-    let mut memory_log = Vec::new();
-    let overall_start_time = Instant::now();
+    let mut monitor_log = Vec::new();
 
-    let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
+    let mut overall_response = HashMap::new();
+
     let pid = std::process::id() as i32;
     start_memory_monitoring(Duration::from_secs(1), &mut monitor_log, "Monitoring", overall_start_time);
 
@@ -1142,8 +1141,8 @@ pub fn run_inference_wo_memoryshare_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-    let mut memory_log = Vec::new();
-    let overall_start_time = Instant::now();
+
+    let mut monitor_log = Vec::new();
 
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();

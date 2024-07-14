@@ -1090,7 +1090,8 @@ memory_log = {
          ["batch 999 done", 1573.33712545, 311324], ["batch 1000 done", 1574.958338888, 311284],
          ["all batch done", 1574.990648261, 311284]],
 
-    "INDICES w/o memory sharing": [["before all batch", 0.100964435, 15600], ["load model done", 2.474990455, 304124],
+    "INDICES w/o memory sharing":
+       [["before all batch", 0.100964435, 15600], ["load model done", 2.474990455, 304124],
                          ["batch 1 done", 2.61148627, 322604], ["batch 2 done", 2.745340054, 323556],
                          ["batch 3 done", 2.878136756, 324756], ["batch 4 done", 3.020718489, 325572],
                          ["batch 5 done", 3.166586651, 324512], ["batch 6 done", 3.312259551, 324816],

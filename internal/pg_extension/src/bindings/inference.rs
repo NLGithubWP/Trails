@@ -883,11 +883,11 @@ pub fn run_inference_w_all_opt_workloads(
         .map_err(|e| e.to_string())?;
     let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    // run_python_function(
-    //     &PY_MODULE_INFERENCE,
-    //     &task_json,
-    //     "init_log",
-    // );
+    run_python_function(
+        &PY_MODULE_INFERENCE,
+        &task_json,
+        "init_log",
+    );
     // Here it cache a state once
     // run_python_function(
     //     &PY_MODULE_INFERENCE,

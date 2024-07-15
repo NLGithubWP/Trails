@@ -1373,7 +1373,11 @@ pub fn invesgate_memory_usage(
     }
 
     // Shared memory cleanup
-    my_shmem.remove().map_err(|e| e.to_string())?;
+        // Explicitly unlink the shared memory segment
+    SharedMem::open(shmem_name)
+        .map_err(|e| e.to_string())?
+        .unlink()
+        .map_err(|e| e.to_string())?;
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());

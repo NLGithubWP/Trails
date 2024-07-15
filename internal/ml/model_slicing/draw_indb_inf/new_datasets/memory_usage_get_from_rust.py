@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 # Load and parse the log file
-file_path = "./internal/ml/model_slicing/exp_data/trails_log_folder/rust_res_threads.json"
+file_path = "./internal/ml/model_slicing/exp_data/trails_log_folder/rust_res.json"
 with open(file_path, 'r') as file:
     log_contents = file.readlines()
 
@@ -49,7 +49,7 @@ ax.legend()
 plt.tight_layout()
 
 # Save the plot
-file_name = "micro_memory_sql_nothing_thread"
+file_name = "micro_memory_sql_nothing_thread_handler"
 output_path = f"./internal/ml/model_slicing/exp_imgs/{file_name}.pdf"
 print(f"saving to {output_path}")
 fig.savefig(output_path, bbox_inches='tight')

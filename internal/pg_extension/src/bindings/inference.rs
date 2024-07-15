@@ -850,7 +850,10 @@ pub fn run_inference_w_all_opt_workloads(
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function
-    start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+    // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let monitor_handle = start_memory_monitoring_handler(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -977,6 +980,12 @@ pub fn run_inference_w_all_opt_workloads(
 
     // Log memory usage after processing each batch
     // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
+
+    // Signal the monitoring thread to stop
+    stop_flag.store(true, Ordering::SeqCst);
+    // Wait for the monitoring thread to finish
+    monitor_handle.join().expect("Monitoring thread panicked");
+
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
@@ -1323,47 +1332,11 @@ pub fn invesgate_memory_usage(
         _ => return Err(format!("Unknown dataset: {}", dataset)),
     };
 
-    // Allocate shared memory once, here is not primary key and id
-    // let shmem_size = 4 * batch_size as usize * (num_columns - 2) as usize;
-    // let shmem_name = "my_shared_memory";
-    // let my_shmem = ShmemConf::new()
-    //     .size(shmem_size)
-    //     .os_id(shmem_name)
-    //     .create()
-    //     .map_err(|e| e.to_string())?;
-    // let shmem_ptr = my_shmem.as_ptr() as *mut i32;
-
     // Execute workloads
     let mut nquery = 0;
-    // let mut all_rows = Vec::new();
-    // // Step 1: query data
-    // Spi::connect(|client| {
-    //     let query = format!(
-    //         "SELECT * FROM {}_int_train {} LIMIT {}",
-    //         dataset, sql, batch_size
-    //     );
-    //     let mut cursor = client.open_cursor(&query, None);
-    //     let table = cursor.fetch(batch_size as c_long)
-    //         .map_err(|e| e.to_string())?;
-    //
-    //     let mut idx = 0;
-    //     for row in table.into_iter() {
-    //         for i in 3..=num_columns as usize {
-    //             if let Ok(Some(val)) = row.get::<i32>(i) {
-    //                 unsafe {
-    //                     // std::ptr::write(shmem_ptr.add(idx), val);
-    //                     // idx += 1;
-    //                     all_rows.push(val);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //
-    //     Ok::<(), String>(()) // Specify the type explicitly
-    // })?;
     sleep(Duration::from_millis(210));
 
-      // Signal the monitoring thread to stop
+    // Signal the monitoring thread to stop
     stop_flag.store(true, Ordering::SeqCst);
     // Wait for the monitoring thread to finish
     monitor_handle.join().expect("Monitoring thread panicked");

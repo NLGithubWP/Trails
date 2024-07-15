@@ -9,6 +9,9 @@ use shared_memory::{ShmemConf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use std::thread::sleep;
+use std::fs::OpenOptions;
+use std::io::Write;
+
 
 pub fn run_inference_shared_memory(
     dataset: &String,
@@ -1332,11 +1335,11 @@ pub fn invesgate_memory_usage(
     //     .map_err(|e| e.to_string())?;
     // let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &task_json,
-        "init_log",
-    );
+    // run_python_function(
+    //     &PY_MODULE_INFERENCE,
+    //     &task_json,
+    //     "init_log",
+    // );
 
     // Execute workloads
     let mut nquery = 0;
@@ -1377,11 +1380,20 @@ pub fn invesgate_memory_usage(
     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
-    run_python_function(
-        &PY_MODULE_INFERENCE,
-        &overall_response_json,
-        "records_results",
-    );
+    let mut file = OpenOptions::new()
+        .append(true)  // Open in append mode
+        .create(true)  // Create the file if it doesn't exist
+        .open("/home/postgres/.pgrx/data-14/trails_log_folder/rust_res.json")
+        .map_err(|e| e.to_string())?;
+
+    // Write the JSON string to the file, followed by a newline
+    writeln!(file, "{}", overall_response_json).map_err(|e| e.to_string())?;
+    //
+    // run_python_function(
+    //     &PY_MODULE_INFERENCE,
+    //     &overall_response_json,
+    //     "records_results",
+    // );
 
     Ok(())
 }

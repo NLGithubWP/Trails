@@ -4,7 +4,7 @@ use std::ffi::c_long;
 use pgrx::prelude::*;
 use crate::bindings::ml_register::PY_MODULE_INFERENCE;
 use crate::bindings::ml_register::run_python_function;
-use crate::utils::monitor::{start_memory_monitoring, record_memory_usage};
+use crate::utils::monitor::{start_memory_monitoring, record_memory_usage, start_memory_monitoring_handler};
 use shared_memory::{ShmemConf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -1309,7 +1309,7 @@ pub fn invesgate_memory_usage(
     // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
 
     let stop_flag = Arc::new(AtomicBool::new(false));
-    let monitor_handle = start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
+    let monitor_handle = start_memory_monitoring_handler(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
 
 
     let num_columns: i32 = match dataset.as_str() {

@@ -107,7 +107,7 @@ def load_model(tensorboard_path: str, device: str = "cuda"):
 def init_log(params: dict, args: Namespace):
     from model_selection.src.logger import logger
     try:
-        logger.info("Init log done")
+        logger.info("begin")
     except:
         logger.info(orjson.dumps(
             {"Errored": traceback.format_exc()}).decode('utf-8'))

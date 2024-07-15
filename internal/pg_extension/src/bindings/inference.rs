@@ -1302,9 +1302,7 @@ pub fn invesgate_memory_usage(
     batch_size: i32,
 ) -> Result<(), String> {
 
-
     let mut overall_response = HashMap::new();
-
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
     let overall_start_time = Instant::now();
 
@@ -1358,13 +1356,9 @@ pub fn invesgate_memory_usage(
 
     // Execute workloads
     let mut nquery = 0;
-    let mut response = HashMap::new();
     while nquery < 1 {
 
-        pgrx::log!("{}", "started");
-
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
-        response.insert("model_init_time", model_init_time.clone());
 
         // Step 1: query data
         let start_time = Instant::now();
@@ -1376,10 +1370,6 @@ pub fn invesgate_memory_usage(
             let mut cursor = client.open_cursor(&query, None);
             let table = cursor.fetch(batch_size as c_long)
                 .map_err(|e| e.to_string())?;
-
-            let end_time = Instant::now();
-            let data_query_time_spi = end_time.duration_since(start_time).as_secs_f64();
-            response.insert("data_query_time_spi", data_query_time_spi);
 
             let start_time_3 = Instant::now();
             let mut idx = 0;
@@ -1393,17 +1383,9 @@ pub fn invesgate_memory_usage(
                     }
                 }
             }
-            let end_time_min3 = Instant::now();
-            let data_query_time_min3 = end_time_min3.duration_since(start_time_3).as_secs_f64();
-            response.insert("data_type_convert_time", data_query_time_min3.clone());
 
             Ok::<(), String>(()) // Specify the type explicitly
         })?;
-        let data_query_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("data_query_time", data_query_time.clone());
-
-        let mem_allocate_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("mem_allocate_time", mem_allocate_time.clone());
 
         // Step 4: model evaluate in Python
         // let start_time = Instant::now();
@@ -1422,17 +1404,7 @@ pub fn invesgate_memory_usage(
         // Step 4: simulate model evaluate in Python by sleeping
         sleep(Duration::from_millis(210));
 
-        let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
-        response.insert("python_compute_time", python_compute_time.clone());
-
-        let overall_end_time = Instant::now();
-        let overall_elapsed_time = overall_end_time.duration_since(overall_start_time).as_secs_f64();
-        let diff_time = model_init_time + data_query_time + python_compute_time - overall_elapsed_time;
-        response.insert("diff_time", diff_time.clone());
-
         nquery += 1;
-        response.clear(); // Clear the response hash map/**/
-        // log_memory_usage(&mut memory_log, overall_start_time, &format!("batch {} done", nquery), pid);
     }
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();

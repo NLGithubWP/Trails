@@ -846,7 +846,7 @@ pub fn run_inference_w_all_opt_workloads(
 ) -> Result<(), String> {
     let mut overall_response = HashMap::new();
 
-    let monitor_log = Arc::new(Mutex::new(Vec::new()));
+    // let monitor_log = Arc::new(Mutex::new(Vec::new()));
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function

@@ -24,7 +24,7 @@ pub fn start_memory_monitoring(interval: Duration,
     });
 }
 
-fn record_memory_usage(monitor_log: &mut Vec<(i32, f64, u64)>, start_time: Instant) {
+pub fn record_memory_usage(monitor_log: &mut Vec<(i32, f64, u64)>, start_time: Instant) {
     let pid = std::process::id() as i32;
     let mut system = System::new_all();
     system.refresh_all();

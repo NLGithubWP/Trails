@@ -49,7 +49,7 @@ ax.legend()
 plt.tight_layout()
 
 # Save the plot
-file_name = "micro_memory_sql_nothing"
+file_name = "micro_memory_sql_nothing_record_only"
 output_path = f"./internal/ml/model_slicing/exp_imgs/{file_name}.pdf"
 print(f"saving to {output_path}")
 fig.savefig(output_path, bbox_inches='tight')

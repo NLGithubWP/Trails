@@ -1299,12 +1299,11 @@ pub fn invesgate_memory_usage(
 ) -> Result<(), String> {
 
     let mut overall_response = HashMap::new();
-    // let monitor_log = Arc::new(Mutex::new(Vec::new()));
-
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function
-    // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+    let monitor_log = Arc::new(Mutex::new(Vec::new()));
+    start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -1359,17 +1358,15 @@ pub fn invesgate_memory_usage(
     // })?;
     sleep(Duration::from_millis(210));
 
-    let mut monitor_log = Vec::new();
-    record_memory_usage(&mut monitor_log, overall_start_time);
+    // let mut monitor_log = Vec::new();
+    // record_memory_usage(&mut monitor_log, overall_start_time);
+    // overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log)).unwrap());
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
 
-     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log)).unwrap());
-
-
-    // let monitor_log_rep = monitor_log.lock().unwrap();
-    // overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
+    let monitor_log_rep = monitor_log.lock().unwrap();
+    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
     let mut file = OpenOptions::new()

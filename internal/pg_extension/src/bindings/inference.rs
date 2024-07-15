@@ -8,7 +8,7 @@ use crate::utils::monitor::start_memory_monitoring;
 use shared_memory::*;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
-// use std::thread::sleep;
+use std::thread::sleep;
 
 pub fn run_inference_shared_memory(
     dataset: &String,

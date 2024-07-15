@@ -1297,13 +1297,16 @@ pub fn invesgate_memory_usage(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-
     let mut overall_response = HashMap::new();
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
-    start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+    // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+
+    let stop_flag = Arc::new(AtomicBool::new(false));
+    let monitor_handle = start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
+
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -1357,6 +1360,11 @@ pub fn invesgate_memory_usage(
     //     Ok::<(), String>(()) // Specify the type explicitly
     // })?;
     sleep(Duration::from_millis(210));
+
+      // Signal the monitoring thread to stop
+    stop_flag.store(true, Ordering::SeqCst);
+    // Wait for the monitoring thread to finish
+    monitor_handle.join().expect("Monitoring thread panicked");
 
     // let mut monitor_log = Vec::new();
     // record_memory_usage(&mut monitor_log, overall_start_time);

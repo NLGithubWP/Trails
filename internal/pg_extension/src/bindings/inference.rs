@@ -1420,7 +1420,7 @@ pub fn invesgate_memory_usage(
         // );
 
         // Step 4: simulate model evaluate in Python by sleeping
-        sleep(Duration::from_millis(10));
+        sleep(Duration::from_millis(210));
 
         let python_compute_time = Instant::now().duration_since(start_time).as_secs_f64();
         response.insert("python_compute_time", python_compute_time.clone());

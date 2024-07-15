@@ -1,20 +1,20 @@
 import re
 import json
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 # Load and parse the log file
-with open("./internal/ml/model_slicing/exp_data/trails_log_folder/in_db_ms_1721048506.log", 'r') as file:
-    log_contents = file.read()
+file_path = "./internal/ml/model_slicing/exp_data/trails_log_folder/rust_res.json"
+with open(file_path, 'r') as file:
+    log_contents = file.readlines()
 
-# Find all occurrences of "final result" and extract the following dictionary
-final_results = re.findall(r"final result = ({.*?})", log_contents)
-
-# Parse each extracted dictionary and accumulate memory logs
+# Parse each JSON line and accumulate memory logs
 all_memory_logs = []
 cumulative_time = 0
 
-for result in final_results:
-    result_dict = json.loads(result.replace("'", '"'))  # Convert single quotes to double quotes for JSON parsing
-    memory_log = json.loads(result_dict.get('memory_log', []))
+for line in log_contents:
+    result_dict = json.loads(line)
+    memory_log = json.loads(result_dict.get('memory_log', '[]'))
 
     for entry in memory_log:
         cumulative_time += entry[0]
@@ -24,15 +24,9 @@ for result in final_results:
 timestamps = [entry[0] for entry in all_memory_logs]
 memory_usage = [entry[1] / 1024 for entry in all_memory_logs]  # Convert KB to MB
 
-# Plotting the data
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-
-
 # Helper function for formatting the y-axis
 def mb_formatter(x, pos):
     return '{:.1f}'.format(x)
-
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(8, 3))
@@ -54,6 +48,9 @@ ax.legend()
 # Display the plot
 plt.tight_layout()
 
-file_name = "micro_memory_sql_no_python"
-print(f"saving to ./internal/ml/model_slicing/exp_imgs/{file_name}.pdf")
-fig.savefig(f"./internal/ml/model_slicing/exp_imgs/{file_name}.pdf", bbox_inches='tight')
+# Save the plot
+file_name = "micro_memory_sql_nothing"
+output_path = f"./internal/ml/model_slicing/exp_imgs/{file_name}.pdf"
+print(f"saving to {output_path}")
+fig.savefig(output_path, bbox_inches='tight')
+

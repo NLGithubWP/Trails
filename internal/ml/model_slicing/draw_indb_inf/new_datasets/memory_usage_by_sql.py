@@ -2,7 +2,7 @@ import re
 import json
 
 # Load and parse the log file
-with open("./internal/ml/model_slicing/exp_data/trails_log_folder/in_db_ms_1721046962.log", 'r') as file:
+with open("./internal/ml/model_slicing/exp_data/trails_log_folder/in_db_ms_1721047537.log", 'r') as file:
     log_contents = file.read()
 
 # Find all occurrences of "final result" and extract the following dictionary
@@ -54,5 +54,6 @@ ax.legend()
 # Display the plot
 plt.tight_layout()
 
-print(f"saving to ./internal/ml/model_slicing/exp_imgs/micro_memory_sql.pdf")
-fig.savefig(f"./internal/ml/model_slicing/exp_imgs/micro_memory_sql.pdf", bbox_inches='tight')
+file_name = "micro_memory_sql_no_response"
+print(f"saving to ./internal/ml/model_slicing/exp_imgs/{file_name}.pdf")
+fig.savefig(f"./internal/ml/model_slicing/exp_imgs/{file_name}.pdf", bbox_inches='tight')

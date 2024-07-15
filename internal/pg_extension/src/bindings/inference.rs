@@ -1337,14 +1337,6 @@ pub fn invesgate_memory_usage(
         &task_json,
         "init_log",
     );
-    // Here it cache a state once
-    // run_python_function(
-    //     &PY_MODULE_INFERENCE,
-    //     &task_json,
-    //     "model_inference_load_model",
-    // );
-
-    // log_memory_usage(&mut memory_log, overall_start_time, "load model done", pid);
 
     // Execute workloads
     let mut nquery = 0;
@@ -1375,21 +1367,6 @@ pub fn invesgate_memory_usage(
             Ok::<(), String>(()) // Specify the type explicitly
         })?;
 
-        // Step 4: model evaluate in Python
-        // let start_time = Instant::now();
-        // let mut eva_task_map = HashMap::new();
-        // eva_task_map.insert("config_file", config_file.clone());
-        // eva_task_map.insert("spi_seconds", data_query_time.to_string());
-        // eva_task_map.insert("rows", batch_size.to_string());
-        // let eva_task_json = json!(eva_task_map).to_string();
-        //
-        // run_python_function(
-        //     &PY_MODULE_INFERENCE,
-        //     &eva_task_json,
-        //     "model_inference_compute_shared_memory_write_once_int",
-        // );
-
-        // Step 4: simulate model evaluate in Python by sleeping
         sleep(Duration::from_millis(210));
 
         nquery += 1;

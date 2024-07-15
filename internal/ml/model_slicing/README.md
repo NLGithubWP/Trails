@@ -176,7 +176,7 @@ SELECT * FROM frappe_train LIMIT 10;
 # Config Extension
 
 ```sql
-psql -h localhost -p 28814 -U postgres 
+psql -h localhost -p 28814 -U postgres -d pg_extension
 # record the necessary func above and then copy it to following
 rm /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
 vi /home/postgres/.pgrx/14.11/pgrx-install/share/extension/pg_extension--0.1.0.sql
@@ -191,6 +191,11 @@ DROP EXTENSION IF EXISTS pg_extension;
 CREATE EXTENSION pg_extension;
 
 cd /home/postgres/.pgrx/data-14/trails_log_folder
+
+
+# copy the file from server to local host
+docker cp moe_inf:/home/postgres/.pgrx/data-14/trails_log_folder ./
+scp -r xingnaili@panda.d2.comp.nus.edu.sg:/home/xingnaili/Trails/trails_log_folder .
 ```
 
 Examples

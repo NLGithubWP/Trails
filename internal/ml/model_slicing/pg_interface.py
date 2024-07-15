@@ -1,6 +1,3 @@
-# set PYTHONPATH
-import sys
-
 # Path you want to add
 sys.path = [
     '/project/Trails/internal/ml/model_slicing',
@@ -22,7 +19,8 @@ from src.model.factory import initialize_model
 import argparse
 from multiprocessing import shared_memory
 import torch
-from typing import Any, List, Dict, Tuple
+from typing import List, Tuple
+import numpy as np
 
 
 def read_json(file_name):
@@ -105,7 +103,6 @@ def load_model(tensorboard_path: str, device: str = "cuda"):
 
 @exception_catcher
 def init_log(params: dict, args: Namespace):
-    global model, sliced_model, col_cardinalities
     from model_selection.src.logger import logger
     try:
         logger.info("Init log done")
@@ -435,9 +432,6 @@ def get_data_from_shared_memory(shmem_name="my_shmem"):
     # Close
     shm.close()
     return data.rstrip('\x00')
-
-
-import numpy as np
 
 
 def get_data_from_shared_memory_int(n_rows):

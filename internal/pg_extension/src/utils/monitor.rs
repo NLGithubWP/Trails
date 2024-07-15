@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use sysinfo::{System, SystemExt, ProcessExt};
-
+use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 
 pub fn start_memory_monitoring(interval: Duration,
                                memory_log: Arc<Mutex<Vec<(i32, f64, u64)>>>,

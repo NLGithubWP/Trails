@@ -1,11 +1,3 @@
-# Path you want to add
-sys.path = [
-    '/project/Trails/internal/ml/model_slicing',
-    '/project/Trails/internal/ml/model_slicing/algorithm',
-    '/project/Trails/internal/ml',
-    '/usr/lib/python38.zip', '/usr/lib/python3.8', '/usr/lib/python3.8/lib-dynload',
-    '/home/postgres/.local/lib/python3.8/site-packages', '/usr/local/lib/python3.8/dist-packages',
-    '/usr/lib/python3/dist-packages']
 
 import calendar
 import os
@@ -21,6 +13,16 @@ from multiprocessing import shared_memory
 import torch
 from typing import List, Tuple
 import numpy as np
+import sys
+
+# Path you want to add
+sys.path = [
+    '/project/Trails/internal/ml/model_slicing',
+    '/project/Trails/internal/ml/model_slicing/algorithm',
+    '/project/Trails/internal/ml',
+    '/usr/lib/python38.zip', '/usr/lib/python3.8', '/usr/lib/python3.8/lib-dynload',
+    '/home/postgres/.local/lib/python3.8/site-packages', '/usr/local/lib/python3.8/dist-packages',
+    '/usr/lib/python3/dist-packages']
 
 
 def read_json(file_name):

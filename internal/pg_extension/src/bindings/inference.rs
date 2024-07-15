@@ -1358,10 +1358,7 @@ pub fn invesgate_memory_usage(
     let mut nquery = 0;
     while nquery < 1 {
 
-        let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
-
         // Step 1: query data
-        let start_time = Instant::now();
         Spi::connect(|client| {
             let query = format!(
                 "SELECT * FROM {}_int_train {} LIMIT {}",
@@ -1371,7 +1368,6 @@ pub fn invesgate_memory_usage(
             let table = cursor.fetch(batch_size as c_long)
                 .map_err(|e| e.to_string())?;
 
-            let start_time_3 = Instant::now();
             let mut idx = 0;
             for row in table.into_iter() {
                 for i in 3..=num_columns as usize {

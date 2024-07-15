@@ -34,7 +34,7 @@ color_dic = {
 # Data
 datasets_result = {
 
-    'INDICES w/ all optimizations':
+    'w/ all optimizations':
         {'data_type_convert_time': 0.425379366, 'overall_query_latency': 0.813545531,
          'mem_allocate_time': 0.009849753, 'data_query_time': 0.499067735, 'model_init_time': 0.007176829,
          'data_query_time_spi': 0.065228678, 'python_compute_time': 0.297439744, 'diff': -0.00986122300000003,
@@ -42,26 +42,26 @@ datasets_result = {
          'py_overall_duration': 0.27048182487487793, 'py_diff': 0.007040739059448242},
 
 
-    'INDICES w/o memory sharing':
+    'w/o memory sharing':
         {"mem_allocate_time": 0, 'model_init_time': 0.005273089, 'diff': -6.108000000004665e-06,
          'data_query_time_spi': 0.062182906, 'data_query_time': 0.504550241, 'overall_query_latency': 2.263737131,
          'python_compute_time': 1.6939076929999999, 'py_conver_to_tensor': 0.125929594039917,
          'py_compute': 0.2513298683166504, 'py_overall_duration': 1.5709002017974854, 'py_diff': 1.186640739440918},
 
-    'INDICES w/o SPI':
+    'w/o SPI':
         {'data_type_convert_time': 0.425379366, 'overall_query_latency': 0.813545531,
          'mem_allocate_time': 0.009849753, 'data_query_time': 1.1151514053344727, 'model_init_time': 0.007176829,
          'data_query_time_spi': 0.065228678, 'python_compute_time': 0.297439744, 'diff': -0.00986122300000003,
          'py_conver_to_tensor': 0.014742374420166016, 'py_compute': 0.24869871139526367,
          'py_overall_duration': 0.27048182487487793, 'py_diff': 0.007040739059448242},
 
-    'INDICES w/o state caching':
+    'w/o state caching':
         {'python_compute_time': 0.321392947, 'data_query_time_spi': 0.053119287, 'overall_query_latency': 1.916763343,
          'mem_allocate_time': 0.009899045, 'data_type_convert_time': 0.418267776, 'diff': -0.009906367999999777,
          'data_query_time': 0.500099237, 'model_init_time': 1.105364791, 'py_conver_to_tensor': 0.01148843765258789,
          'py_compute': 0.2511436939239502, 'py_overall_duration': 0.2696952819824219, 'py_diff': 0.007063150405883789},
 
-    'INDICES w/o all optimizations':
+    'w/o all optimizations':
         {'data_type_convert_time': 0.425379366, 'overall_query_latency': 0.813545531,
          'mem_allocate_time': 0.009849753, 'data_query_time': 1.1151514053344727, 'model_init_time':  1.105364791,
          'data_query_time_spi': 0.065228678, 'python_compute_time': 1.6939076929999999, 'diff': -0.00986122300000003,
@@ -146,7 +146,7 @@ ax.set_xlabel('Response Time (ms)', fontsize=20)
 export_legend(
     fig,
     filename="micro2_leg",
-    colnum=2,
+    colnum=5,
     unique_labels=['Model Loading', 'Data Retrieval', 'Data Copying',
                    'Data Preprocessing & Inference'])
 

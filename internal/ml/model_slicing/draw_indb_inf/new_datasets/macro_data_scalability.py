@@ -222,7 +222,7 @@ fig.tight_layout()
 # plt.show()
 export_legend(
     fig,
-    colnum=3,
+    colnum=5,
     unique_labels=['Model Loading', 'Data Retrieval', 'Data Copying',
                    'Data Preprocessing', 'Inference'])
 

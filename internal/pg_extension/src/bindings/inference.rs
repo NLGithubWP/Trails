@@ -839,8 +839,6 @@ pub fn run_inference_w_all_opt_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-
-
     let mut overall_response = HashMap::new();
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
@@ -898,7 +896,6 @@ pub fn run_inference_w_all_opt_workloads(
     let mut nquery = 0;
     let mut response = HashMap::new();
     while nquery < 1 {
-
         pgrx::log!("{}", "started");
 
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
@@ -1003,7 +1000,6 @@ pub fn run_inference_wo_cache_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-
     let mut overall_response = HashMap::new();
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
@@ -1043,7 +1039,6 @@ pub fn run_inference_wo_cache_workloads(
     let mut nquery = 0;
     let mut response = HashMap::new();
     while nquery < 1 {
-
         pgrx::log!("{}", "started");
 
         let model_init_time = Instant::now().duration_since(overall_start_time).as_secs_f64();
@@ -1154,8 +1149,6 @@ pub fn run_inference_wo_memoryshare_workloads(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-
-
     let mut overall_response = HashMap::new();
 
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
@@ -1301,7 +1294,6 @@ pub fn invesgate_memory_usage(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
-
     let mut overall_response = HashMap::new();
     let monitor_log = Arc::new(Mutex::new(Vec::new()));
     let overall_start_time = Instant::now();
@@ -1402,6 +1394,9 @@ pub fn invesgate_memory_usage(
 
         nquery += 1;
     }
+
+    // Shared memory cleanup
+    my_shmem.remove().map_err(|e| e.to_string())?;
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());

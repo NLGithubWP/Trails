@@ -852,8 +852,8 @@ pub fn run_inference_w_all_opt_workloads(
     // Pass the Arc directly to the function
     // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
 
-    let stop_flag = Arc::new(AtomicBool::new(false));
-    let monitor_handle = start_memory_monitoring_handler(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
+    // let stop_flag = Arc::new(AtomicBool::new(false));
+    // let monitor_handle = start_memory_monitoring_handler(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time, Arc::clone(&stop_flag));
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -982,9 +982,8 @@ pub fn run_inference_w_all_opt_workloads(
     // log_memory_usage(&mut memory_log, overall_start_time, "all batch done", pid);
 
     // Signal the monitoring thread to stop
-    stop_flag.store(true, Ordering::SeqCst);
-    // Wait for the monitoring thread to finish
-    monitor_handle.join().expect("Monitoring thread panicked");
+    // stop_flag.store(true, Ordering::SeqCst);
+    // monitor_handle.join().expect("Monitoring thread panicked");
 
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
@@ -1333,7 +1332,6 @@ pub fn invesgate_memory_usage(
     };
 
     // Execute workloads
-    let mut nquery = 0;
     sleep(Duration::from_millis(210));
 
     // Signal the monitoring thread to stop

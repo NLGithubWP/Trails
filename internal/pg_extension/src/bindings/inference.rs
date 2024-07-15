@@ -4,7 +4,7 @@ use std::ffi::c_long;
 use pgrx::prelude::*;
 use crate::bindings::ml_register::PY_MODULE_INFERENCE;
 use crate::bindings::ml_register::run_python_function;
-use crate::utils::monitor::start_memory_monitoring;
+use crate::utils::monitor::{start_memory_monitoring, record_memory_usage};
 use shared_memory::{ShmemConf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -1297,12 +1297,14 @@ pub fn invesgate_memory_usage(
     sql: &String,
     batch_size: i32,
 ) -> Result<(), String> {
+
     let mut overall_response = HashMap::new();
-    let monitor_log = Arc::new(Mutex::new(Vec::new()));
+    // let monitor_log = Arc::new(Mutex::new(Vec::new()));
+
     let overall_start_time = Instant::now();
 
     // Pass the Arc directly to the function
-    start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
+    // start_memory_monitoring(Duration::from_millis(200), Arc::clone(&monitor_log), overall_start_time);
 
     let num_columns: i32 = match dataset.as_str() {
         "frappe" => 12,
@@ -1357,10 +1359,17 @@ pub fn invesgate_memory_usage(
     // })?;
     sleep(Duration::from_millis(210));
 
+    let mut monitor_log = Vec::new();
+    record_memory_usage(&mut monitor_log, overall_start_time);
+
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
-    let monitor_log_rep = monitor_log.lock().unwrap();
-    overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
+
+     overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(monitor_log)).unwrap());
+
+
+    // let monitor_log_rep = monitor_log.lock().unwrap();
+    // overall_response.insert("memory_log".to_string(), serde_json::to_string(&json!(*monitor_log_rep)).unwrap());
     let overall_response_json = serde_json::to_string(&json!(overall_response)).map_err(|e| e.to_string())?;
 
     let mut file = OpenOptions::new()

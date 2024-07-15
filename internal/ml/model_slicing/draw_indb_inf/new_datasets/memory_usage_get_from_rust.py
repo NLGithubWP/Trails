@@ -17,8 +17,8 @@ for line in log_contents:
     memory_log = json.loads(result_dict.get('memory_log', '[]'))
 
     for entry in memory_log:
-        cumulative_time += entry[0]
-        all_memory_logs.append([cumulative_time, entry[1]])
+        cumulative_time += entry[1]
+        all_memory_logs.append([cumulative_time, entry[2]])
 
 # Prepare data for plotting
 timestamps = [entry[0] for entry in all_memory_logs]

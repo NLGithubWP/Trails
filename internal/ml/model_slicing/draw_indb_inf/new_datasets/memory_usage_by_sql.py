@@ -2,7 +2,7 @@ import re
 import json
 
 # Load and parse the log file
-with open("./internal/ml/model_slicing/exp_data/trails_log_folder/in_db_ms_1721047537.log", 'r') as file:
+with open("./internal/ml/model_slicing/exp_data/trails_log_folder/in_db_ms_1721048163.log", 'r') as file:
     log_contents = file.read()
 
 # Find all occurrences of "final result" and extract the following dictionary

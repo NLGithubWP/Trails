@@ -1341,38 +1341,34 @@ pub fn invesgate_memory_usage(
     // Execute workloads
     let mut nquery = 0;
     while nquery < 1 {
-        let mut all_rows = Vec::new();
-        // Step 1: query data
-        Spi::connect(|client| {
-            let query = format!(
-                "SELECT * FROM {}_int_train {} LIMIT {}",
-                dataset, sql, batch_size
-            );
-            let mut cursor = client.open_cursor(&query, None);
-            let table = cursor.fetch(batch_size as c_long)
-                .map_err(|e| e.to_string())?;
-
-            let mut idx = 0;
-            for row in table.into_iter() {
-                for i in 3..=num_columns as usize {
-                    if let Ok(Some(val)) = row.get::<i32>(i) {
-                        unsafe {
-                            // std::ptr::write(shmem_ptr.add(idx), val);
-                            // idx += 1;
-                            all_rows.push(val);
-                        }
-                    }
-                }
-            }
-
-            Ok::<(), String>(()) // Specify the type explicitly
-        })?;
-
+        // let mut all_rows = Vec::new();
+        // // Step 1: query data
+        // Spi::connect(|client| {
+        //     let query = format!(
+        //         "SELECT * FROM {}_int_train {} LIMIT {}",
+        //         dataset, sql, batch_size
+        //     );
+        //     let mut cursor = client.open_cursor(&query, None);
+        //     let table = cursor.fetch(batch_size as c_long)
+        //         .map_err(|e| e.to_string())?;
+        //
+        //     let mut idx = 0;
+        //     for row in table.into_iter() {
+        //         for i in 3..=num_columns as usize {
+        //             if let Ok(Some(val)) = row.get::<i32>(i) {
+        //                 unsafe {
+        //                     // std::ptr::write(shmem_ptr.add(idx), val);
+        //                     // idx += 1;
+        //                     all_rows.push(val);
+        //                 }
+        //             }
+        //         }
+        //     }
+        //
+        //     Ok::<(), String>(()) // Specify the type explicitly
+        // })?;
         sleep(Duration::from_millis(210));
-
         nquery += 1;
-
-        all_rows.clear();
     }
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();

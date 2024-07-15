@@ -1317,14 +1317,6 @@ pub fn invesgate_memory_usage(
         _ => return Err(format!("Unknown dataset: {}", dataset)),
     };
 
-    // Step 1: load model and columns etc
-    let mut task_map = HashMap::new();
-    task_map.insert("where_cond", condition.clone());
-    task_map.insert("config_file", config_file.clone());
-    task_map.insert("col_cardinalities_file", col_cardinalities_file.clone());
-    task_map.insert("model_path", model_path.clone());
-    let task_json = json!(task_map).to_string();
-
     // Allocate shared memory once, here is not primary key and id
     // let shmem_size = 4 * batch_size as usize * (num_columns - 2) as usize;
     // let shmem_name = "my_shared_memory";
@@ -1335,44 +1327,35 @@ pub fn invesgate_memory_usage(
     //     .map_err(|e| e.to_string())?;
     // let shmem_ptr = my_shmem.as_ptr() as *mut i32;
 
-    // run_python_function(
-    //     &PY_MODULE_INFERENCE,
-    //     &task_json,
-    //     "init_log",
-    // );
-
     // Execute workloads
     let mut nquery = 0;
-    while nquery < 1 {
-        // let mut all_rows = Vec::new();
-        // // Step 1: query data
-        // Spi::connect(|client| {
-        //     let query = format!(
-        //         "SELECT * FROM {}_int_train {} LIMIT {}",
-        //         dataset, sql, batch_size
-        //     );
-        //     let mut cursor = client.open_cursor(&query, None);
-        //     let table = cursor.fetch(batch_size as c_long)
-        //         .map_err(|e| e.to_string())?;
-        //
-        //     let mut idx = 0;
-        //     for row in table.into_iter() {
-        //         for i in 3..=num_columns as usize {
-        //             if let Ok(Some(val)) = row.get::<i32>(i) {
-        //                 unsafe {
-        //                     // std::ptr::write(shmem_ptr.add(idx), val);
-        //                     // idx += 1;
-        //                     all_rows.push(val);
-        //                 }
-        //             }
-        //         }
-        //     }
-        //
-        //     Ok::<(), String>(()) // Specify the type explicitly
-        // })?;
-        sleep(Duration::from_millis(210));
-        nquery += 1;
-    }
+    // let mut all_rows = Vec::new();
+    // // Step 1: query data
+    // Spi::connect(|client| {
+    //     let query = format!(
+    //         "SELECT * FROM {}_int_train {} LIMIT {}",
+    //         dataset, sql, batch_size
+    //     );
+    //     let mut cursor = client.open_cursor(&query, None);
+    //     let table = cursor.fetch(batch_size as c_long)
+    //         .map_err(|e| e.to_string())?;
+    //
+    //     let mut idx = 0;
+    //     for row in table.into_iter() {
+    //         for i in 3..=num_columns as usize {
+    //             if let Ok(Some(val)) = row.get::<i32>(i) {
+    //                 unsafe {
+    //                     // std::ptr::write(shmem_ptr.add(idx), val);
+    //                     // idx += 1;
+    //                     all_rows.push(val);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //
+    //     Ok::<(), String>(()) // Specify the type explicitly
+    // })?;
+    sleep(Duration::from_millis(210));
 
     let overall_time_usage = Instant::now().duration_since(overall_start_time).as_secs_f64();
     overall_response.insert("overall_time_usage".to_string(), overall_time_usage.to_string());
@@ -1388,12 +1371,5 @@ pub fn invesgate_memory_usage(
 
     // Write the JSON string to the file, followed by a newline
     writeln!(file, "{}", overall_response_json).map_err(|e| e.to_string())?;
-    //
-    // run_python_function(
-    //     &PY_MODULE_INFERENCE,
-    //     &overall_response_json,
-    //     "records_results",
-    // );
-
     Ok(())
 }

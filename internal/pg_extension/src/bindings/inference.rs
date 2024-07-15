@@ -6,14 +6,12 @@ use crate::bindings::ml_register::PY_MODULE_INFERENCE;
 use crate::bindings::ml_register::run_python_function;
 use crate::utils::monitor::{start_memory_monitoring, record_memory_usage, start_memory_monitoring_handler};
 use shared_memory::{ShmemConf};
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use std::thread::sleep;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 use std::thread::{self, JoinHandle};
-use std::time::{Duration, Instant};
 use sysinfo::{System, SystemExt};
 
 

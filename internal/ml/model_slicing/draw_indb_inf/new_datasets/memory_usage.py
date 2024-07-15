@@ -746,7 +746,6 @@ ax.yaxis.set_major_formatter(FuncFormatter(mb_formatter))
 plt.xscale('log')
 
 ax.set_ylabel('Memory Usage (MB)', fontsize=14)
-ax.set_title('Memory Usage Over Time', fontsize=16)
 ax.grid(True, linestyle='--', linewidth=0.5)
 
 # Show legend
